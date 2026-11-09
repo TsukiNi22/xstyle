@@ -1,7 +1,7 @@
 # xstyle
 
 > [!TIP]
-> Documentation [TsukiNi22/xstyle](https://tsukini22.github.io/xstyle/docs/) (v1.0.0): technical documentation and the interactive project graph.
+> Documentation [TsukiNi22/xstyle](https://tsukini22.github.io/xstyle/docs/) (v1.0.0): user guide, concepts, every option and rule (searchable, EN / FR) and the interactive project graph.
 
 Checker and fixer of my coding style, C++ first (`cpp-style`, `cpp-comments`, `cpp-class` layout, libutils
 usage), then Python, shell, Rust and the generic rules of every language. Each issue is printed with its file, line
@@ -379,7 +379,7 @@ cmake --build $BUILD_DIR --target get_unregistered_files  # .cpp files missing f
 | `assets/fonts/ansi_shadow.flf` | Banner font of the file headers (`--header`), embedded at build time (`build/generated/xstyle/Font.hpp`) |
 | `tests/xstyle/` | Unit tests (GoogleTest) + command line tests (`ctest`) |
 | `cmake/package/` | CMake package config and the CPack scripts (Arch packages) |
-| `docs/` | HTML documentation (technical page, project graph) |
+| `docs/` | Documentation site (`docs/site/`: Markdown sources + generators, built pages in `docs/`) and the project graph |
 
 > [!NOTE]
 > Every new `.cpp` must be added to the `SRC` (executable only) or `SRC_SHARED` (executable and tests) list of the `CMakeLists.txt` (`get_unregistered_files` lists the missing ones).
