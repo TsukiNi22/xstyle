@@ -1,0 +1,6 @@
+[xstyle]
+name=xstyle repository
+baseurl=https://tsukini22.github.io/xstyle/fedora/$releasever/$basearch
+enabled=1
+gpgcheck=1
+gpgkey=https://tsukini22.github.io/xstyle/RPM-GPG-KEY-tsukini
