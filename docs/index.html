@@ -1,0 +1,868 @@
+<!doctype html>
+<html lang="en" data-page="technical" data-storage-key="xstyle" data-repo="TsukiNi22/xstyle">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>xstyle · Technical documentation</title>
+<style>
+:root {
+  --bg: #f7f7f5;
+  --surface: #ffffff;
+  --text: #1d1f23;
+  --muted: #5d636e;
+  --border: #dfe1e5;
+  --accent: #2f5bd3;
+  --accent-soft: #e6ecfb;
+  --warn: #a8540a;
+  --warn-soft: #fbefe3;
+  --ok: #1f7a4a;
+  --ok-soft: #e3f4ea;
+  --code-bg: #f1f2f4;
+  --node: #ffffff;
+  --node-alt: #eef1f8;
+  --line: #8a909b;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #15171b;
+    --surface: #1d2025;
+    --text: #e6e7ea;
+    --muted: #9aa0ab;
+    --border: #30343b;
+    --accent: #7d9cf0;
+    --accent-soft: #232c45;
+    --warn: #f0a868;
+    --warn-soft: #3a2a1b;
+    --ok: #6fcf97;
+    --ok-soft: #1b3326;
+    --code-bg: #24272d;
+    --node: #23262c;
+    --node-alt: #283043;
+    --line: #747a85;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #15171b;
+  --surface: #1d2025;
+  --text: #e6e7ea;
+  --muted: #9aa0ab;
+  --border: #30343b;
+  --accent: #7d9cf0;
+  --accent-soft: #232c45;
+  --warn: #f0a868;
+  --warn-soft: #3a2a1b;
+  --ok: #6fcf97;
+  --ok-soft: #1b3326;
+  --code-bg: #24272d;
+  --node: #23262c;
+  --node-alt: #283043;
+  --line: #747a85;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 16px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+.layout {
+  display: grid;
+  grid-template-columns: 250px minmax(0, 1fr);
+  gap: 40px;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 40px 24px 80px;
+}
+main { min-width: 0; }
+header h1 { font-size: 34px; line-height: 1.2; margin: 0 0 8px; }
+header p { color: var(--muted); margin: 0 0 32px; max-width: 70ch; }
+section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 28px 32px;
+  margin-bottom: 24px;
+  scroll-margin-top: 72px;
+}
+h2 { font-size: 22px; margin: 0 0 16px; }
+h3 { font-size: 17px; margin: 28px 0 10px; }
+p, li { max-width: 75ch; }
+a { color: var(--accent); }
+code {
+  font: 0.9em ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  background: var(--code-bg);
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+pre {
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 16px;
+  overflow-x: auto;
+  font: 13.5px/1.55 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+pre code { background: none; padding: 0; }
+.table-wrap { overflow-x: auto; margin: 12px 0; }
+table { border-collapse: collapse; width: 100%; font-size: 14.5px; }
+th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+th { color: var(--muted); font-weight: 600; font-size: 13px; text-transform: uppercase; letter-spacing: .04em; }
+.callout {
+  background: var(--accent-soft);
+  border-left: 3px solid var(--accent);
+  padding: 12px 16px;
+  border-radius: 0 6px 6px 0;
+  margin: 16px 0;
+}
+.callout.warn { background: var(--warn-soft); border-left-color: var(--warn); }
+.callout.ok { background: var(--ok-soft); border-left-color: var(--ok); }
+.callout > :first-child { margin-top: 0; }
+.callout > :last-child { margin-bottom: 0; }
+figure { margin: 20px 0; }
+figure svg { width: 100%; height: auto; display: block; }
+figcaption { color: var(--muted); font-size: 13px; margin-top: 6px; }
+svg .box { fill: var(--node); stroke: var(--line); stroke-width: 1.2; }
+svg .box-alt { fill: var(--node-alt); stroke: var(--accent); stroke-width: 1.2; }
+svg .group { fill: none; stroke: var(--border); stroke-width: 1.5; stroke-dasharray: 5 4; }
+svg .lbl { fill: var(--text); font: 13px system-ui, sans-serif; }
+svg .small { fill: var(--muted); font: 11.5px system-ui, sans-serif; }
+svg .title { fill: var(--muted); font: 600 12px system-ui, sans-serif; letter-spacing: .05em; }
+svg .edge { stroke: var(--line); stroke-width: 1.4; fill: none; }
+svg .edge-accent { stroke: var(--accent); stroke-width: 1.6; fill: none; }
+svg .dash { stroke-dasharray: 4 4; }
+svg .arrow { fill: var(--line); }
+svg .arrow-accent { fill: var(--accent); }
+.topbar {
+  position: sticky; top: 0; z-index: 20;
+  display: flex; align-items: center; gap: 18px;
+  height: 56px; padding: 0 20px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+.tabs { display: flex; gap: 4px; margin-left: 8px; overflow-x: auto; }
+.tabs[hidden] { display: none; }
+.tabs a {
+  padding: 6px 12px; border-radius: 6px;
+  color: var(--muted); text-decoration: none; font-size: 14px; white-space: nowrap;
+}
+.tabs a:hover { color: var(--text); background: var(--code-bg); }
+.tabs a.current { color: var(--accent); background: var(--accent-soft); font-weight: 600; }
+.topbar .spacer { flex: 1; }
+.icon-btn {
+  display: grid; place-items: center;
+  width: 36px; height: 36px; padding: 0;
+  background: var(--surface); color: var(--text);
+  border: 1px solid var(--border); border-radius: 50%;
+  cursor: pointer; text-decoration: none;
+  transition: border-color .15s, color .15s;
+}
+.icon-btn:hover { color: var(--accent); border-color: var(--accent); }
+.icon-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.icon-btn svg { width: 18px; height: 18px; }
+@media (max-width: 860px) {
+  .layout { grid-template-columns: 1fr; padding: 24px 16px 60px; gap: 16px; }
+  .topbar { gap: 10px; padding: 0 12px; }
+  .brand .ver { display: none; }
+  .menu-btn { display: grid; }
+  .sidebar { position: fixed; top: 56px; left: 0; bottom: 0; z-index: 25; width: min(300px, 85vw); max-height: none; padding: 16px 10px; background: var(--bg); border-right: 1px solid var(--border); transform: translateX(-105%); transition: transform .2s; }
+  .sidebar.open { transform: none; box-shadow: 0 10px 40px rgba(0, 0, 0, .25); }
+  section { padding: 20px 16px; }
+  header h1 { font-size: 27px; }
+}
+/* Language switch (EN / FR pill) */
+.lang-switch {
+  display: inline-flex; align-items: center; gap: 2px; padding: 3px;
+  border: 1.5px solid var(--border); border-radius: 999px; background: var(--surface);
+}
+.lang-switch button {
+  border: 0; background: none; color: var(--text); cursor: pointer;
+  font: 600 12.5px system-ui, sans-serif; letter-spacing: .03em;
+  padding: 4px 11px; border-radius: 999px; transition: background .2s, color .2s;
+}
+.lang-switch button.on { background: var(--accent); color: var(--surface); }
+.lang-switch button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+/* Theme switch: blue track + sun (light), black track + moon and stars (dark) */
+.theme-switch {
+  position: relative; width: 58px; height: 30px; flex: none; padding: 0; border: 0; border-radius: 999px;
+  background: #2196f3; cursor: pointer; transition: background .3s;
+}
+.theme-switch:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.theme-switch .knob {
+  position: absolute; top: 3px; left: 3px; width: 24px; height: 24px; border-radius: 50%;
+  display: grid; place-items: center; transition: transform .3s, background .3s;
+}
+.theme-switch .knob svg { width: 22px; height: 22px; }
+.theme-switch .sun { display: block; }
+.theme-switch .moon, .theme-switch .stars { display: none; }
+.theme-switch .stars { position: absolute; inset: 0; }
+.theme-switch .stars i { position: absolute; width: 2px; height: 2px; border-radius: 50%; background: #fff; }
+.theme-switch .stars i:nth-child(1) { left: 9px; top: 9px; }
+.theme-switch .stars i:nth-child(2) { left: 16px; top: 18px; width: 1.5px; height: 1.5px; }
+.theme-switch .stars i:nth-child(3) { left: 21px; top: 8px; width: 1.5px; height: 1.5px; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .theme-switch { background: #0b0b0d; box-shadow: inset 0 0 0 1px #2a2c31; }
+  :root:not([data-theme="light"]) .theme-switch .knob { transform: translateX(28px); background: #ffffff; }
+  :root:not([data-theme="light"]) .theme-switch .sun { display: none; }
+  :root:not([data-theme="light"]) .theme-switch .moon, :root:not([data-theme="light"]) .theme-switch .stars { display: block; }
+}
+:root[data-theme="dark"] .theme-switch { background: #0b0b0d; box-shadow: inset 0 0 0 1px #2a2c31; }
+:root[data-theme="dark"] .theme-switch .knob { transform: translateX(28px); background: #ffffff; }
+:root[data-theme="dark"] .theme-switch .sun { display: none; }
+:root[data-theme="dark"] .theme-switch .moon, :root[data-theme="dark"] .theme-switch .stars { display: block; }
+/* Bilingual content: only the active language is shown */
+:root[lang="en"] [data-lang="fr"], :root[lang="fr"] [data-lang="en"] { display: none !important; }
+/* ---------- Header: logo + version badge, mobile menu ---------- */
+.brand { display: flex; align-items: center; gap: 10px; color: var(--text); text-decoration: none; font-weight: 700; white-space: nowrap; }
+.brand .logo { width: 26px; height: 26px; flex: none; color: var(--accent); object-fit: contain; }
+.brand .ver { font-size: 12px; color: var(--muted); font-weight: 500; padding: 2px 6px; border: 1px solid var(--border); border-radius: 6px; }
+.brand .ver:empty { display: none; } /* no version: the name alone */
+.menu-btn { display: none; }
+/* ---------- Sidebar tree (pages > sections of the current page) ---------- */
+.sidebar { position: sticky; top: 80px; align-self: start; max-height: calc(100vh - 100px); overflow-y: auto; font-size: 14px; }
+@media (max-width: 860px) { .sidebar { position: fixed; top: 56px; max-height: none; } } /* off-canvas menu: out of the flow */
+.sidebar p { margin: 0 0 8px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; font-size: 12px; }
+.sidebar a { display: block; padding: 5px 10px; color: var(--muted); text-decoration: none; border-left: 2px solid var(--border); }
+.sidebar a:hover, .sidebar a.active { color: var(--accent); border-left-color: var(--accent); }
+/* ---------- Page header: eyebrow + title + lead ---------- */
+.page-eyebrow { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--accent); margin-bottom: 6px; }
+header .lead { font-size: 17px; color: var(--muted); margin: 0 0 32px; max-width: 70ch; }
+/* ---------- Heading anchors ---------- */
+h2 .anchor, h3 .anchor { margin-left: 8px; color: var(--muted); font-weight: 400; text-decoration: none; opacity: 0; transition: opacity .15s; }
+h2:hover .anchor, h3:hover .anchor, .anchor:focus { opacity: 1; }
+/* ---------- Code blocks: title bar + copy button ---------- */
+pre { position: relative; }
+pre[data-title]::before {
+  content: attr(data-title); display: block; margin: -14px -16px 12px; padding: 6px 16px;
+  font: 12px system-ui, sans-serif; color: var(--muted); border-bottom: 1px solid var(--border);
+  background: var(--surface); border-radius: 7px 7px 0 0;
+}
+pre .copy {
+  position: absolute; top: 8px; right: 8px; font: 12px system-ui, sans-serif; cursor: pointer;
+  border: 1px solid var(--border); background: var(--surface); color: var(--muted);
+  border-radius: 6px; padding: 3px 8px; opacity: 0; transition: opacity .15s;
+}
+pre[data-title] .copy { top: 5px; }
+pre:hover .copy, pre .copy:focus { opacity: 1; }
+pre .copy:hover { color: var(--text); }
+/* ---------- Content tabs ---------- */
+.ctabs { display: flex; gap: 4px; flex-wrap: wrap; border-bottom: 1px solid var(--border); margin: 12px 0; }
+.ctabs button { background: none; border: 0; border-bottom: 2px solid transparent; margin-bottom: -1px; padding: 8px 12px; cursor: pointer; color: var(--muted); font: 500 14px system-ui, sans-serif; }
+.ctabs button.active { color: var(--accent); border-bottom-color: var(--accent); }
+.ctab-panel { display: none; }
+.ctab-panel.active { display: block; }
+/* ---------- Previous / next page ---------- */
+.pager { display: flex; justify-content: space-between; gap: 16px; margin-top: 32px; }
+.pager a { flex: 1; padding: 14px 16px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); color: var(--text); text-decoration: none; }
+.pager a:hover { border-color: var(--accent); }
+.pager a span { display: block; font-size: 12px; color: var(--muted); }
+.pager a.next { text-align: right; }
+.pager:empty { display: none; }
+/* ---------- Footer ---------- */
+footer.site { max-width: 1180px; margin: 0 auto; padding: 22px 24px 30px; border-top: 1px solid var(--border); color: var(--muted); font-size: 13px; }
+footer.site a { color: var(--accent); }
+@media (max-width: 860px) {
+  .menu-btn { display: grid; }
+  footer.site { padding: 20px 16px; }
+  .topbar .tabs { display: none; } /* the sidebar (menu) gives the navigation on mobile */
+}
+.topbar .icon-btn, .topbar .lang-switch, .topbar .theme-switch { flex: none; }
+.topbar .tabs { min-width: 0; }
+@media (max-width: 860px) {
+  .topbar .spacer { display: none; }
+  .topbar .tabs { flex: 1 1 auto; }
+  .topbar .icon-btn { width: 32px; height: 32px; }
+}
+@media (max-width: 480px) {
+  .topbar { gap: 8px; padding: 0 10px; }
+  .topbar a.icon-btn[href] { display: none; } /* GitHub link: also in the footer / graph panel */
+  .lang-switch button { padding: 4px 9px; }
+}
+@media (min-width: 1340px) {
+  .layout { grid-template-columns: minmax(0, 1fr) minmax(0, 880px) minmax(0, 1fr); max-width: none; }
+  .layout > .sidebar { grid-column: 1; justify-self: end; width: 230px; }
+  .layout > main { grid-column: 2; }
+  footer.site { max-width: 880px; }
+}
+/* ---------- No scroll beyond the page ---------- */
+html, body { overscroll-behavior: none; }
+/* ---------- Top right actions: same height, grouped, divider ---------- */
+.top-actions { display: flex; align-items: center; gap: 8px; flex: none; }
+.top-actions .divider { width: 1px; height: 22px; background: var(--border); margin: 0 2px; }
+.top-actions .icon-btn { width: 34px; height: 34px; }
+.top-actions .lang-switch { height: 34px; padding: 3px; background: var(--code-bg); border: 1px solid var(--border); }
+.top-actions .lang-switch button { height: 26px; padding: 0 10px; font-size: 12px; }
+.top-actions .theme-switch { width: 56px; height: 30px; border: 1px solid transparent; }
+.top-actions .theme-switch .knob { top: 2px; left: 2px; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .top-actions .theme-switch { border-color: var(--border); box-shadow: none; }
+  :root:not([data-theme="light"]) .top-actions .theme-switch .knob { transform: translateX(26px); }
+}
+:root[data-theme="dark"] .top-actions .theme-switch { border-color: var(--border); box-shadow: none; }
+:root[data-theme="dark"] .top-actions .theme-switch .knob { transform: translateX(26px); }
+@media (max-width: 480px) { .top-actions .divider { display: none; } }
+/* Technical page of xstyle */
+.sev { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 12.5px; font-weight: 600; border: 1px solid var(--border); background: var(--code-bg); color: var(--text); white-space: nowrap; }
+.sev code, .sev.unforgivable code { color: inherit; background: transparent; }
+.sev.unforgivable { background: var(--warn); border-color: var(--warn); color: var(--surface); }
+.sev.major { background: var(--warn-soft); border-color: var(--warn); color: var(--warn); }
+.sev.minor { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+.sev.mandatory { background: var(--ok-soft); border-color: var(--ok); color: var(--ok); }
+.sev.negligible { color: var(--muted); }
+.rules-count { font-variant-numeric: tabular-nums; }
+.two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+@media (max-width: 860px) { .two { grid-template-columns: minmax(0, 1fr); } }
+table.keep td { white-space: nowrap; }
+.fig-scroll { overflow-x: auto; }
+.sources li { margin: 4px 0; }
+.fig-scroll svg { min-width: 620px; }
+.fig-scroll:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.rule-filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 12px 0; }
+.rule-filters button { font: inherit; font-size: 13.5px; padding: 4px 12px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface); color: var(--text); cursor: pointer; min-height: 32px; }
+.rule-filters button:hover { border-color: var(--accent); }
+.rule-filters button.on { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+.rule-filters button:focus-visible, .rule-filters input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.rule-filters input { font: inherit; font-size: 16px; padding: 4px 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--surface); color: var(--text); min-width: 0; flex: 1 1 160px; }
+.rules-table td:first-child, .rules-table td:nth-child(2) { white-space: nowrap; }
+.rules-table td:nth-child(5) { min-width: 18ch; }
+@media (pointer: coarse) { .rule-filters button { min-height: 44px; } }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <button class="icon-btn menu-btn" type="button" id="menuBtn" aria-label="Open the navigation" data-i18n-aria-label><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+  <a class="brand" href="index.html"><svg class="logo" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none"><path d="M9 5.5H7.5A2.5 2.5 0 0 0 5 8v4.5A2 2 0 0 1 3 14.5v3a2 2 0 0 1 2 2V24a2.5 2.5 0 0 0 2.5 2.5H9M23 5.5h1.5A2.5 2.5 0 0 1 27 8v4.5a2 2 0 0 0 2 2v3a2 2 0 0 0-2 2V24a2.5 2.5 0 0 1-2.5 2.5H23" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M16 9.5l6 3.25v6.5L16 22.5l-6-3.25v-6.5z" fill="currentColor" opacity=".35"/><path d="M16 9.5l6 3.25-6 3.25-6-3.25z" fill="currentColor"/><path d="M16 16v6.5M22 12.75v6.5" stroke="var(--surface)" stroke-width="1.2"/></svg><span class="repo-name">xstyle</span><span class="ver repo-version">v1.0.0</span></a>
+  <nav class="tabs" aria-label="Pages">
+    <a href="index.html" class="current" aria-current="page" data-i18n>Technical</a>
+    <a href="graph.html" data-i18n>Graph</a>
+  </nav>
+  <span class="spacer"></span>
+  <div class="top-actions">
+  <a class="icon-btn repo-link" href="https://github.com/TsukiNi22/xstyle" title="GitHub repository" data-i18n-title aria-label="GitHub repository" data-i18n-aria-label>
+    <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38v-1.33c-2.23.48-2.7-1.07-2.7-1.07-.36-.93-.89-1.17-.89-1.17-.73-.5.06-.49.06-.49.8.06 1.23.83 1.23.83.71 1.23 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.6 7.6 0 0 1 4 0c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48v2.2c0 .21.15.46.55.38A8 8 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+  </a>
+  <span class="divider" aria-hidden="true"></span>
+  <div class="lang-switch" role="group" aria-label="Language">
+    <button type="button" data-set-lang="en" class="on">EN</button>
+    <button type="button" data-set-lang="fr">FR</button>
+  </div>
+  <button class="theme-switch" type="button" id="themeToggle" role="switch" aria-checked="false" aria-label="Toggle theme" data-i18n-aria-label title="Toggle theme" data-i18n-title>
+    <span class="stars" aria-hidden="true"><i></i><i></i><i></i></span>
+    <span class="knob" aria-hidden="true">
+      <svg class="sun" viewBox="0 0 24 24" fill="#ffffff"><circle cx="12" cy="12" r="5.2"/><g stroke="#ffffff" stroke-width="2.2" stroke-linecap="round"><path d="M12 1.8v2.6M12 19.6v2.6M1.8 12h2.6M19.6 12h2.6M4.8 4.8l1.8 1.8M17.4 17.4l1.8 1.8M4.8 19.2l1.8-1.8M17.4 6.6l1.8-1.8"/></g></svg>
+      <svg class="moon" viewBox="0 0 24 24"><path d="M15.6 4.2a8 8 0 1 0 4.2 11.6A7 7 0 0 1 15.6 4.2z" fill="#f6c343"/></svg>
+    </span>
+  </button>
+  </div>
+</header>
+<div class="layout">
+<aside class="sidebar" id="sidebar">
+  <p data-i18n>Contents</p>
+  <a href="#overview">1. <span data-lang="en">Overview</span><span data-lang="fr">Présentation</span></a>
+  <a href="#install">2. Installation</a>
+  <a href="#usage">3. <span data-lang="en">Usage</span><span data-lang="fr">Utilisation</span></a>
+  <a href="#levels">4. <span data-lang="en">Severities &amp; fixes</span><span data-lang="fr">Gravités &amp; corrections</span></a>
+  <a href="#rules">5. <span data-lang="en">Rules</span><span data-lang="fr">Règles</span></a>
+  <a href="#suppress">6. <span data-lang="en">Suppression</span><span data-lang="fr">Suppression</span></a>
+  <a href="#architecture">7. Architecture</a>
+  <a href="#release">8. <span data-lang="en">Packages &amp; CI</span><span data-lang="fr">Paquets &amp; CI</span></a>
+</aside>
+<main>
+<header>
+  <div class="page-eyebrow" data-i18n>Technical documentation</div>
+  <h1><span data-lang="en">xstyle, checker and fixer of the coding style</span><span data-lang="fr">xstyle, vérificateur et correcteur du style de code</span></h1>
+  <p class="lead"><span data-lang="en">C++20 / libutils program checking Tsukini's coding style: C++ first (cpp-style, cpp-comments, the cpp-class layout, libutils usage), then Python, shell, Rust, CMake and the generic rules of every language. Each issue comes with its file, line, rule and proposed fix; what is safe is fixed with <code>--fix</code>.</span><span data-lang="fr">Programme C++20 / libutils qui vérifie le style de code de Tsukini : le C++ d'abord (cpp-style, cpp-comments, la structure cpp-class, l'usage de libutils), puis Python, shell, Rust, CMake et les règles génériques de tous les langages. Chaque problème donne son fichier, sa ligne, sa règle et la correction proposée ; ce qui est sûr est corrigé avec <code>--fix</code>.</span></p>
+</header>
+
+<section id="overview">
+  <h2>1. <span data-lang="en">Overview</span><span data-lang="fr">Présentation</span></h2>
+  <p><span data-lang="en">xstyle reads the files given (or the current directory, recursively), detects the language of each one, runs the rules of that language and prints the issues followed by a summary counting them by severity and by rule. The exit status is 0 when nothing at or above <code>--fail-on</code> is left: the pre-commit hook and the CI use it.</span><span data-lang="fr">xstyle lit les fichiers donnés (ou le dossier courant, récursivement), détecte le langage de chacun, lance les règles de ce langage et affiche les problèmes puis un résumé qui les compte par gravité et par règle. Le code de sortie vaut 0 quand il ne reste rien au niveau de <code>--fail-on</code> ou au-dessus : le hook pre-commit et la CI s'en servent.</span></p>
+  <div class="table-wrap" role="region" tabindex="0" aria-label="Languages"><table class="keep">
+    <thead><tr><th scope="col"><span data-lang="en">Language</span><span data-lang="fr">Langage</span></th><th scope="col"><span data-lang="en">Files</span><span data-lang="fr">Fichiers</span></th><th scope="col"><span data-lang="en">Rules</span><span data-lang="fr">Règles</span></th></tr></thead>
+    <tbody>
+      <tr><td>C / C++</td><td><code>.cpp</code> <code>.hpp</code> <code>.c</code> <code>.h</code></td><td><code>CPP-*</code>, <code>LU-*</code> (libutils)</td></tr>
+      <tr><td>Python</td><td><code>.py</code></td><td><code>PY-*</code></td></tr>
+      <tr><td>Shell</td><td><code>.sh .bash .zsh</code></td><td><code>SH-*</code></td></tr>
+      <tr><td>Rust</td><td><code>.rs</code></td><td><code>RS-*</code></td></tr>
+      <tr><td>CMake</td><td><code>CMakeLists.txt</code>, <code>.cmake</code></td><td><code>CMAKE-*</code></td></tr>
+      <tr><td><span data-lang="en">Every file</span><span data-lang="fr">Tout fichier</span></td><td>Lua, JS / TS, Makefile, YAML, JSON, Markdown...</td><td><code>G-*</code></td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="install">
+  <h2>2. Installation</h2>
+  <p><span data-lang="en">Packages <code>xstyle</code> (RPM, DEB, Arch) from the <code>gh-pages</code> repository of the project, or from <a href="https://tsukini22.github.io/my-universe/">my-universe</a> with every other package of TsukiNi22. They install <code>/usr/bin/xstyle</code> and its bash / zsh / fish completion.</span><span data-lang="fr">Paquets <code>xstyle</code> (RPM, DEB, Arch) depuis le dépôt <code>gh-pages</code> du projet, ou depuis <a href="https://tsukini22.github.io/my-universe/">my-universe</a> avec tous les autres paquets de TsukiNi22. Ils installent <code>/usr/bin/xstyle</code> et sa complétion bash / zsh / fish.</span></p>
+  <div class="ctabs" data-tabs="install"><button type="button" data-tab="universe">my-universe</button><button type="button" data-tab="setup">setup.sh</button><button type="button" data-tab="sources"><span data-lang="en">Sources</span><span data-lang="fr">Sources</span></button></div>
+  <div class="ctab-panel" data-tabs="install" data-tab="universe"><pre data-title="bash"><code>curl -fsSL https://tsukini22.github.io/my-universe/install.sh | bash -s
+sudo dnf install xstyle      # sudo apt install xstyle / sudo pacman -S xstyle</code></pre></div>
+  <div class="ctab-panel" data-tabs="install" data-tab="setup"><pre data-title="bash"><code>curl -fsSL https://raw.githubusercontent.com/TsukiNi22/xstyle/main/setup.sh | bash -s -- --install   # --pre: xstyle-pre</code></pre></div>
+  <div class="ctab-panel" data-tabs="install" data-tab="sources"><pre data-title="bash"><code>git clone https://github.com/TsukiNi22/xstyle.git &amp;&amp; cd xstyle
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Optimized
+cmake --build build --parallel $(nproc)
+cmake --install build --prefix ~/.local     # ~/.local/bin/xstyle + the completions</code></pre></div>
+  <p class="callout"><span data-lang="en">Building needs <code>clang++</code> (C++20), CMake 3.20+ and libutils 4.1.0+ (4.2.0+ on Arch).</span><span data-lang="fr">La compilation demande <code>clang++</code> (C++20), CMake 3.20+ et libutils 4.1.0+ (4.2.0+ sur Arch).</span></p>
+</section>
+
+<section id="usage">
+  <h2>3. <span data-lang="en">Usage</span><span data-lang="fr">Utilisation</span></h2>
+  <pre data-title="bash"><code>xstyle                                 # the current directory, recursive
+xstyle -r src include                  # these directories (recursive with -r)
+xstyle --rtk                           # compact output for an AI (no color, no source line)
+xstyle -s major                        # only the major and unforgivable issues
+xstyle -c CPP-THIS,LU                  # only these rules (code, prefix or pattern)
+xstyle --fix                           # fix what is safe (--force, --dangerous-force: more)
+xstyle --staged --fail-on major        # the staged lines only: the pre-commit hook mode
+xstyle -s major -o report.md           # Markdown report (text / md / json)
+xstyle -x CPP-THIS                     # explain a rule (-L: every rule)</code></pre>
+  <p><span data-lang="en">Every option also has an environment variable (<code>XSTYLE_IGNORE</code>, <code>XSTYLE_EXCLUDE</code>, <code>XSTYLE_RTK</code>, <code>XSTYLE_R34</code>...): <code>xstyle --help</code> lists them.</span><span data-lang="fr">Chaque option a aussi une variable d'environnement (<code>XSTYLE_IGNORE</code>, <code>XSTYLE_EXCLUDE</code>, <code>XSTYLE_RTK</code>, <code>XSTYLE_R34</code>...) : <code>xstyle --help</code> les liste.</span></p>
+</section>
+
+<section id="levels">
+  <h2>4. <span data-lang="en">Severities &amp; fixes</span><span data-lang="fr">Gravités &amp; corrections</span></h2>
+  <div class="two">
+  <div class="table-wrap" role="region" tabindex="0" aria-label="Severities"><table>
+    <thead><tr><th scope="col"><span data-lang="en">Severity</span><span data-lang="fr">Gravité</span></th><th scope="col"><span data-lang="en">Meaning</span><span data-lang="fr">Sens</span></th></tr></thead>
+    <tbody>
+      <tr><td><span class="sev unforgivable">unforgivable</span></td><td><span data-lang="en">Never acceptable (ex: <code>using namespace</code>)</span><span data-lang="fr">Jamais acceptable (ex : <code>using namespace</code>)</span></td></tr>
+      <tr><td><span class="sev major">major</span></td><td><span data-lang="en">Breaks the style, blocks the hook</span><span data-lang="fr">Casse le style, bloque le hook</span></td></tr>
+      <tr><td><span class="sev minor">minor</span></td><td><span data-lang="en">To fix, only warned by the hook</span><span data-lang="fr">À corriger, le hook avertit seulement</span></td></tr>
+      <tr><td><span class="sev negligible">negligible</span></td><td><span data-lang="en">Cosmetic</span><span data-lang="fr">Cosmétique</span></td></tr>
+      <tr><td><span class="sev mandatory">mandatory</span></td><td><span data-lang="en">Shown, never counted (R34)</span><span data-lang="fr">Affichée, jamais comptée (R34)</span></td></tr>
+    </tbody>
+  </table></div>
+  <div class="table-wrap" role="region" tabindex="0" aria-label="Fix levels"><table>
+    <thead><tr><th scope="col">Fix</th><th scope="col"><span data-lang="en">Applied by</span><span data-lang="fr">Appliquée par</span></th></tr></thead>
+    <tbody>
+      <tr><td><code>auto</code></td><td><code>--fix</code></td></tr>
+      <tr><td><code>force</code></td><td><code>--fix --force</code></td></tr>
+      <tr><td><code>dangerous</code></td><td><code>--fix --dangerous-force</code></td></tr>
+      <tr><td><code>ask</code></td><td><span data-lang="en"><code>--fix</code>, after a question</span><span data-lang="fr"><code>--fix</code>, après une question</span></td></tr>
+      <tr><td><code>manual</code></td><td><span data-lang="en">hint only</span><span data-lang="fr">indication seulement</span></td></tr>
+    </tbody>
+  </table></div>
+  </div>
+</section>
+
+<section id="rules">
+  <h2>5. <span data-lang="en">Rules</span><span data-lang="fr">Règles</span> (<span class="rules-count">85</span>)</h2>
+  <p><span data-lang="en">Generated from <code>xstyle --list-rules</code> (<code>docs/scripts/update_rules.py</code>).</span><span data-lang="fr">Générée depuis <code>xstyle --list-rules</code> (<code>docs/scripts/update_rules.py</code>).</span></p>
+  <div class="rule-filters" role="group" aria-label="Family">
+    <button type="button" class="on" data-family="all" aria-pressed="true"><span data-lang="en">All</span><span data-lang="fr">Toutes</span></button>
+    <button type="button" data-family="generic" aria-pressed="false">G</button>
+    <button type="button" data-family="cpp" aria-pressed="false">CPP</button>
+    <button type="button" data-family="libutils" aria-pressed="false">LU</button>
+    <button type="button" data-family="python" aria-pressed="false">PY</button>
+    <button type="button" data-family="shell" aria-pressed="false">SH</button>
+    <button type="button" data-family="rust" aria-pressed="false">RS</button>
+    <button type="button" data-family="cmake" aria-pressed="false">CMAKE</button>
+    <input type="search" class="rule-search" autocomplete="off" aria-label="Filter the rules" placeholder="Filter…">
+  </div>
+  <div class="table-wrap" role="region" tabindex="0" aria-label="Rules"><table class="rules-table">
+    <thead><tr><th scope="col">Code</th><th scope="col"><span data-lang="en">Severity</span><span data-lang="fr">Gravité</span></th><th scope="col">Fix</th><th scope="col"><span data-lang="en">Languages</span><span data-lang="fr">Langages</span></th><th scope="col">Description</th></tr></thead>
+    <tbody>
+<!-- xstyle:rules:start -->
+<tr data-family="mandatory" data-severity="mandatory"><td><code>R34</code></td><td><span class="sev mandatory">mandatory</span></td><td>force</td><td><code>*</code></td><td>Rule 34: if it exists, there is porn of it. No exceptions</td></tr>
+<tr data-family="generic" data-severity="major"><td><code>G-CRLF</code></td><td><span class="sev major">major</span></td><td>auto</td><td><code>*</code></td><td>Windows line endings (CRLF), use LF</td></tr>
+<tr data-family="generic" data-severity="major"><td><code>G-TAB</code></td><td><span class="sev major">major</span></td><td>auto</td><td><code>*</code></td><td>Tab used for the indentation, use 4 spaces (except Makefile recipes)</td></tr>
+<tr data-family="generic" data-severity="minor"><td><code>G-TRAILING</code></td><td><span class="sev minor">minor</span></td><td>auto</td><td><code>*</code></td><td>Trailing whitespace</td></tr>
+<tr data-family="generic" data-severity="minor"><td><code>G-EMPTY-LINES</code></td><td><span class="sev minor">minor</span></td><td>auto</td><td><code>*</code></td><td>Two or more consecutive empty lines, one is the maximum</td></tr>
+<tr data-family="generic" data-severity="negligible"><td><code>G-EOF-NEWLINE</code></td><td><span class="sev negligible">negligible</span></td><td>auto</td><td><code>*</code></td><td>No newline at the end of the file</td></tr>
+<tr data-family="generic" data-severity="negligible"><td><code>G-EOF-EMPTY</code></td><td><span class="sev negligible">negligible</span></td><td>auto</td><td><code>*</code></td><td>Empty lines at the end of the file</td></tr>
+<tr data-family="generic" data-severity="minor"><td><code>G-TODO</code></td><td><span class="sev minor">minor</span></td><td>-</td><td><code>*</code></td><td>TODO / FIXME / XXX tag, describe the limitation in a normal comment instead</td></tr>
+<tr data-family="generic" data-severity="negligible"><td><code>G-INDENT</code></td><td><span class="sev negligible">negligible</span></td><td>-</td><td><code>cpp,c,py,sh,lua,js,rs,cmake</code></td><td>Indentation that is not a multiple of 4 spaces</td></tr>
+<tr data-family="cpp" data-severity="unforgivable"><td><code>CPP-USING-NAMESPACE</code></td><td><span class="sev unforgivable">unforgivable</span></td><td>-</td><td><code>cpp</code></td><td>using namespace, always write the fully qualified names</td></tr>
+<tr data-family="cpp" data-severity="major"><td><code>CPP-GUARD-MISSING</code></td><td><span class="sev major">major</span></td><td>auto</td><td><code>cpp,c</code></td><td>Header without include guard (#ifndef NAME_H / #define NAME_H)</td></tr>
+<tr data-family="cpp" data-severity="minor"><td><code>CPP-PRAGMA-ONCE</code></td><td><span class="sev minor">minor</span></td><td>auto</td><td><code>cpp,c</code></td><td>#pragma once instead of the include guard NAME_H</td></tr>
+<tr data-family="cpp" data-severity="minor"><td><code>CPP-GUARD-NAME</code></td><td><span class="sev minor">minor</span></td><td>auto</td><td><code>cpp,c</code></td><td>Include guard not named after the file (Name.hpp -&gt; NAME_H)</td></tr>
+<tr data-family="cpp" data-severity="negligible"><td><code>CPP-ENDIF-COMMENT</code></td><td><span class="sev negligible">negligible</span></td><td>auto</td><td><code>cpp,c</code></td><td>Guard #endif without its /* NAME_H */ comment</td></tr>
+<tr data-family="cpp" data-severity="negligible"><td><code>CPP-PREPRO-INDENT</code></td><td><span class="sev negligible">negligible</span></td><td>auto</td><td><code>cpp,c</code></td><td>#if block not at the indent of the code around with its content one level more (directives: 4 per #if / guard level)</td></tr>
+<tr data-family="cpp" data-severity="minor"><td><code>CPP-HEADER</code></td><td><span class="sev minor">minor</span></td><td>ask</td><td><code>cpp,c</code></td><td>Missing file header (cpp-class scripts/header.py)</td></tr>
+<tr data-family="cpp" data-severity="negligible"><td><code>CPP-HEADER-FILE</code></td><td><span class="sev negligible">negligible</span></td><td>auto</td><td><code>cpp,c</code></td><td>@file of the header is not the name of the file</td></tr>
+<tr data-family="cpp" data-severity="major"><td><code>CPP-NULL</code></td><td><span class="sev major">major</span></td><td>auto</td><td><code>cpp</code></td><td>NULL instead of nullptr</td></tr>
+<tr data-family="cpp" data-severity="major"><td><code>CPP-C-CAST</code></td><td><span class="sev major">major</span></td><td>auto</td><td><code>cpp</code></td><td>C cast, use static_cast (only (void) is allowed)</td></tr>
+<tr data-family="cpp" data-severity="major"><td><code>CPP-AUTO</code></td><td><span class="sev major">major</span></td><td>-</td><td><code>cpp</code></td><td>auto, write the type (allowed: iterators, structured bindings)</td></tr>
+<tr data-family="cpp" data-severity="major"><td><code>CPP-USING-STD</code></td><td><span class="sev major">major</span></td><td>-</td><td><code>cpp</code></td><td>using std::x, always write std::x</td></tr>
+<tr data-family="cpp" data-severity="minor"><td><code>CPP-TYPEDEF</code></td><td><span class="sev minor">minor</span></td><td>auto</td><td><code>cpp</code></td><td>typedef, use using Name = Type</td></tr>
+<tr data-family="cpp" data-severity="major"><td><code>CPP-BRACE-FUNCTION</code></td><td><span class="sev major">major</span></td><td>auto</td><td><code>cpp,c</code></td><td>Function opening brace on the signature line, it goes on its own line</td></tr>
+<tr data-family="cpp" data-severity="major"><td><code>CPP-BRACE-OWN-LINE</code></td><td><span class="sev major">major</span></td><td>auto</td><td><code>cpp,c</code></td><td>Opening brace of a class / namespace / control block on its own line, it goes on the same line</td></tr>
+<tr data-family="cpp" data-severity="minor"><td><code>CPP-ELSE-LINE</code></td><td><span class="sev minor">minor</span></td><td>auto</td><td><code>cpp,c</code></td><td>else / catch not on the closing brace line (} else {)</td></tr>
+<tr data-family="cpp" data-severity="minor"><td><code>CPP-KEYWORD-SPACE</code></td><td><span class="sev minor">minor</span></td><td>auto</td><td><code>cpp,c</code></td><td>No space between if / for / while / switch / catch and the parenthesis</td></tr>
+<tr data-family="cpp" data-severity="negligible"><td><code>CPP-PAREN-SPACE</code></td><td><span class="sev negligible">negligible</span></td><td>auto</td><td><code>cpp,c</code></td><td>Space inside the parentheses of a control statement</td></tr>
+<tr data-family="cpp" data-severity="negligible"><td><code>CPP-COLON-SPACE</code></td><td><span class="sev negligible">negligible</span></td><td>auto</td><td><code>cpp</code></td><td>Space before &#x27;:&#x27; of a range-for, an inheritance or an enum base</td></tr>
+<tr data-family="cpp" data-severity="minor"><td><code>CPP-PTR-REF</code></td><td><span class="sev minor">minor</span></td><td>auto</td><td><code>cpp,c</code></td><td>&amp; / * glued to the name instead of the type (const T&amp; name, char* buf)</td></tr>
+<tr data-family="cpp" data-severity="minor"><td><code>CPP-VOID-PARAM</code></td><td><span class="sev minor">minor</span></td><td>auto</td><td><code>cpp,c</code></td><td>Empty parameter list, write (void)</td></tr>
+<tr data-family="cpp" data-severity="minor"><td><code>CPP-THIS</code></td><td><span class="sev minor">minor</span></td><td>auto</td><td><code>cpp</code></td><td>Member accessed without this-&gt;</td></tr>
+<tr data-family="cpp" data-severity="minor"><td><code>CPP-NAMESPACE-NESTED</code></td><td><span class="sev minor">minor</span></td><td>-</td><td><code>cpp</code></td><td>Nested namespace blocks, use namespace a::b {</td></tr>
+<tr data-family="cpp" data-severity="negligible"><td><code>CPP-NAMESPACE-COMMENT</code></td><td><span class="sev negligible">negligible</span></td><td>auto</td><td><code>cpp</code></td><td>Namespace block without // namespace start / // namespace end</td></tr>
+<tr data-family="cpp" data-severity="minor"><td><code>CPP-NAMESPACE-INDENT</code></td><td><span class="sev minor">minor</span></td><td>-</td><td><code>cpp</code></td><td>Content of a namespace indented (it is not)</td></tr>
+<tr data-family="cpp" data-severity="minor"><td><code>CPP-INCLUDE-ORDER</code></td><td><span class="sev minor">minor</span></td><td>auto</td><td><code>cpp,c</code></td><td>Include order: personal libs (+ defines), project, external; longest name first</td></tr>
+<tr data-family="cpp" data-severity="major"><td><code>CPP-CLASS-NAME</code></td><td><span class="sev major">major</span></td><td>-</td><td><code>cpp</code></td><td>Class / struct / enum not in PascalCase</td></tr>
+<tr data-family="cpp" data-severity="minor"><td><code>CPP-MEMBER-NAME</code></td><td><span class="sev minor">minor</span></td><td>-</td><td><code>cpp</code></td><td>Class data member not named _camelCase</td></tr>
+<tr data-family="cpp" data-severity="minor"><td><code>CPP-MACRO-NAME</code></td><td><span class="sev minor">minor</span></td><td>-</td><td><code>cpp,c</code></td><td>Macro not in UPPER_SNAKE (or _lower for attribute / section macros)</td></tr>
+<tr data-family="cpp" data-severity="negligible"><td><code>CPP-ONE-LINER</code></td><td><span class="sev negligible">negligible</span></td><td>auto</td><td><code>cpp</code></td><td>One-liner body not written {statement}; (an empty one: { /* Nothing */ };)</td></tr>
+<tr data-family="cpp" data-severity="minor"><td><code>CPP-EMPTY-BODY</code></td><td><span class="sev minor">minor</span></td><td>auto</td><td><code>cpp</code></td><td>Empty constructor / destructor / operator of a class on several lines (one line: sig: init { /* Nothing */ }; // comment)</td></tr>
+<tr data-family="cpp" data-severity="negligible"><td><code>CPP-ONELINER-ALIGN</code></td><td><span class="sev negligible">negligible</span></td><td>auto</td><td><code>cpp</code></td><td>One-liner functions of a group not aligned tight: their { right after the longest signature + 1 (lengths far apart: one column per level of 2+ lines)</td></tr>
+<tr data-family="cpp" data-severity="minor"><td><code>CPP-INIT-COLON</code></td><td><span class="sev minor">minor</span></td><td>auto</td><td><code>cpp</code></td><td>Init list on the line of its constructor: its : glued to the ) (Name(int a): _a{a})</td></tr>
+<tr data-family="cpp" data-severity="negligible"><td><code>CPP-ACCESS-ORDER</code></td><td><span class="sev negligible">negligible</span></td><td>-</td><td><code>cpp</code></td><td>public before private / protected in a class</td></tr>
+<tr data-family="cpp" data-severity="minor"><td><code>CPP-SINGLE-STATEMENT</code></td><td><span class="sev minor">minor</span></td><td>-</td><td><code>cpp</code></td><td>Single statement function defined in the .cpp, define it inline in the header</td></tr>
+<tr data-family="cpp" data-severity="minor"><td><code>CPP-DOXYGEN</code></td><td><span class="sev minor">minor</span></td><td>-</td><td><code>cpp,c</code></td><td>Doxygen comment (@brief, @param, ///, /**), short plain comments only</td></tr>
+<tr data-family="cpp" data-severity="minor"><td><code>CPP-INCLUDE-COMMENT</code></td><td><span class="sev minor">minor</span></td><td>-</td><td><code>cpp,c</code></td><td>Include of a header without its trailing comment listing what is used</td></tr>
+<tr data-family="cpp" data-severity="negligible"><td><code>CPP-COMMENT-ALIGN</code></td><td><span class="sev negligible">negligible</span></td><td>auto</td><td><code>cpp,c</code></td><td>Trailing comments of an include block not aligned on one column</td></tr>
+<tr data-family="cpp" data-severity="minor"><td><code>CPP-EMPTY-SECTION</code></td><td><span class="sev minor">minor</span></td><td>auto</td><td><code>cpp,c</code></td><td>Section separator / class block with nothing linked to it</td></tr>
+<tr data-family="cpp" data-severity="minor"><td><code>CPP-CLASS-BLOCK</code></td><td><span class="sev minor">minor</span></td><td>-</td><td><code>cpp</code></td><td>Declaration in the wrong class block: Pre-Function = declared only (body in the .cpp), Function = defined in the header, Constructor / Destructor = theirs, data members before the blocks (Operator: free)</td></tr>
+<tr data-family="cpp" data-severity="negligible"><td><code>CPP-ORPHAN-GROUP</code></td><td><span class="sev negligible">negligible</span></td><td>auto</td><td><code>cpp,c</code></td><td>/* group */ label with nothing under it</td></tr>
+<tr data-family="cmake" data-severity="minor"><td><code>CMAKE-SECTION-ORDER</code></td><td><span class="sev minor">minor</span></td><td>-</td><td><code>cmake</code></td><td>Sections not in the cmake-style order</td></tr>
+<tr data-family="cmake" data-severity="negligible"><td><code>CMAKE-BANNER</code></td><td><span class="sev negligible">negligible</span></td><td>auto</td><td><code>cmake</code></td><td>Section banner not &#x27;# &#x27; + 25 &#x27;=&#x27;</td></tr>
+<tr data-family="cmake" data-severity="major"><td><code>CMAKE-COMPILER-ORDER</code></td><td><span class="sev major">major</span></td><td>force</td><td><code>cmake</code></td><td>set(CMAKE_CXX_COMPILER) after project(): ignored, it goes before</td></tr>
+<tr data-family="cmake" data-severity="major"><td><code>CMAKE-GLOB-SOURCES</code></td><td><span class="sev major">major</span></td><td>-</td><td><code>cmake</code></td><td>Sources collected with file(GLOB), list them in set(SRC ...)</td></tr>
+<tr data-family="cmake" data-severity="major"><td><code>CMAKE-UNREGISTERED</code></td><td><span class="sev major">major</span></td><td>force</td><td><code>cmake</code></td><td>Source file of src/ missing from set(SRC ...)</td></tr>
+<tr data-family="libutils" data-severity="major"><td><code>LU-INCLUDE</code></td><td><span class="sev major">major</span></td><td>auto</td><td><code>cpp</code></td><td>libutils header included directly, use #define _Section + &lt;utils/utils.hpp&gt;</td></tr>
+<tr data-family="libutils" data-severity="major"><td><code>LU-BARE-INCLUDE</code></td><td><span class="sev major">major</span></td><td>auto</td><td><code>cpp</code></td><td>&lt;utils/utils.hpp&gt; without any #define _Section before it</td></tr>
+<tr data-family="libutils" data-severity="minor"><td><code>LU-SECTION</code></td><td><span class="sev minor">minor</span></td><td>auto</td><td><code>cpp</code></td><td>libutils section used without its #define before &lt;utils/utils.hpp&gt;</td></tr>
+<tr data-family="libutils" data-severity="minor"><td><code>LU-ATTRIBUTE</code></td><td><span class="sev minor">minor</span></td><td>auto</td><td><code>cpp</code></td><td>Standard attribute with a libutils macro equivalent ([[nodiscard]] -&gt; _nodiscard)</td></tr>
+<tr data-family="libutils" data-severity="major"><td><code>LU-MIGRATION</code></td><td><span class="sev major">major</span></td><td>auto</td><td><code>cpp</code></td><td>Deprecated libutils name (migration alias), use the new name</td></tr>
+<tr data-family="libutils" data-severity="major"><td><code>LU-EXCEPTION</code></td><td><span class="sev major">major</span></td><td>-</td><td><code>cpp</code></td><td>Standard exception thrown, use utils::exception::ErrorException</td></tr>
+<tr data-family="libutils" data-severity="minor"><td><code>LU-ARGS</code></td><td><span class="sev minor">minor</span></td><td>-</td><td><code>cpp</code></td><td>Arguments parsed by hand, use utils::arguments::ArgParser</td></tr>
+<tr data-family="libutils" data-severity="minor"><td><code>LU-ANSI</code></td><td><span class="sev minor">minor</span></td><td>-</td><td><code>cpp</code></td><td>Raw ANSI escape sequence, use utils::iomanip</td></tr>
+<tr data-family="libutils" data-severity="minor"><td><code>LU-SOCKET</code></td><td><span class="sev minor">minor</span></td><td>-</td><td><code>cpp</code></td><td>Raw BSD socket, use utils::network (TCPSocket, Server, Client)</td></tr>
+<tr data-family="libutils" data-severity="minor"><td><code>LU-SYSCALL</code></td><td><span class="sev minor">minor</span></td><td>-</td><td><code>cpp</code></td><td>Raw pipe / dup / fork / epoll / shm / dlopen, use utils::encapsulation</td></tr>
+<tr data-family="libutils" data-severity="minor"><td><code>LU-THREADS</code></td><td><span class="sev minor">minor</span></td><td>-</td><td><code>cpp</code></td><td>Hand made thread pool, use utils::pool::Cluster or utils::system::Scheduler</td></tr>
+<tr data-family="libutils" data-severity="minor"><td><code>LU-ANGLE</code></td><td><span class="sev minor">minor</span></td><td>-</td><td><code>cpp</code></td><td>Degree / radian conversion by hand, use utils::math::trigo</td></tr>
+<tr data-family="libutils" data-severity="minor"><td><code>LU-BASE64</code></td><td><span class="sev minor">minor</span></td><td>-</td><td><code>cpp</code></td><td>Hand made base64, use utils::smanip::codec::Base64Codec</td></tr>
+<tr data-family="libutils" data-severity="minor"><td><code>LU-VERBOSE</code></td><td><span class="sev minor">minor</span></td><td>-</td><td><code>cpp</code></td><td>Hand made verbose flag, use utils::verbose (set_verbose, onBasicVerbose)</td></tr>
+<tr data-family="libutils" data-severity="minor"><td><code>LU-DISTANCE</code></td><td><span class="sev minor">minor</span></td><td>-</td><td><code>cpp</code></td><td>Hand made string distance, use utils::algorithms::c2dmp</td></tr>
+<tr data-family="python" data-severity="major"><td><code>PY-WILDCARD-IMPORT</code></td><td><span class="sev major">major</span></td><td>-</td><td><code>py</code></td><td>from x import *, import the names explicitly</td></tr>
+<tr data-family="python" data-severity="major"><td><code>PY-BARE-EXCEPT</code></td><td><span class="sev major">major</span></td><td>-</td><td><code>py</code></td><td>Bare except:, catch the exceptions expected</td></tr>
+<tr data-family="python" data-severity="minor"><td><code>PY-TYPE-HINTS</code></td><td><span class="sev minor">minor</span></td><td>auto</td><td><code>py</code></td><td>Function without type hints (added when certain: literal defaults, None / literal returns)</td></tr>
+<tr data-family="python" data-severity="minor"><td><code>PY-PRINT-ERROR</code></td><td><span class="sev minor">minor</span></td><td>auto</td><td><code>py</code></td><td>print(..., file=stderr), use stderr.write</td></tr>
+<tr data-family="python" data-severity="minor"><td><code>PY-OPEN-ENCODING</code></td><td><span class="sev minor">minor</span></td><td>force</td><td><code>py</code></td><td>open() of a text file without encoding=&quot;utf-8&quot;</td></tr>
+<tr data-family="rust" data-severity="major"><td><code>RS-UNWRAP</code></td><td><span class="sev major">major</span></td><td>-</td><td><code>rs</code></td><td>.unwrap() outside of the tests, propagate with ? (and a context) or handle the error</td></tr>
+<tr data-family="rust" data-severity="major"><td><code>RS-PANIC</code></td><td><span class="sev major">major</span></td><td>-</td><td><code>rs</code></td><td>panic! / process::exit in a library file, todo! / unimplemented! left anywhere</td></tr>
+<tr data-family="rust" data-severity="major"><td><code>RS-GLOB-IMPORT</code></td><td><span class="sev major">major</span></td><td>-</td><td><code>rs</code></td><td>use path::*, import the names explicitly (super::* and preludes excepted)</td></tr>
+<tr data-family="rust" data-severity="minor"><td><code>RS-NAMING</code></td><td><span class="sev minor">minor</span></td><td>-</td><td><code>rs</code></td><td>fn / variables snake_case, types PascalCase, const / static UPPER_SNAKE</td></tr>
+<tr data-family="rust" data-severity="minor"><td><code>RS-UNSAFE</code></td><td><span class="sev minor">minor</span></td><td>-</td><td><code>rs</code></td><td>unsafe block without a // SAFETY: comment explaining why it is sound</td></tr>
+<tr data-family="rust" data-severity="minor"><td><code>RS-PRINT-ERROR</code></td><td><span class="sev minor">minor</span></td><td>auto</td><td><code>rs</code></td><td>Error printed with println!, use eprintln! (stderr)</td></tr>
+<tr data-family="rust" data-severity="minor"><td><code>RS-DBG</code></td><td><span class="sev minor">minor</span></td><td>-</td><td><code>rs</code></td><td>dbg! left in the code</td></tr>
+<tr data-family="shell" data-severity="minor"><td><code>SH-SHEBANG</code></td><td><span class="sev minor">minor</span></td><td>-</td><td><code>sh</code></td><td>Script without shebang (#!/bin/bash)</td></tr>
+<tr data-family="shell" data-severity="minor"><td><code>SH-STRICT</code></td><td><span class="sev minor">minor</span></td><td>force</td><td><code>sh</code></td><td>Bash script without set -euo pipefail</td></tr>
+<tr data-family="shell" data-severity="negligible"><td><code>SH-TEST</code></td><td><span class="sev negligible">negligible</span></td><td>auto</td><td><code>sh</code></td><td>[ ] test in a bash script, use [[ ]]</td></tr>
+<!-- xstyle:rules:end -->
+    </tbody>
+  </table></div>
+</section>
+
+<section id="suppress">
+  <h2>6. <span data-lang="en">Suppression</span><span data-lang="fr">Suppression</span></h2>
+  <p><span data-lang="en">A comment of the file silences a rule where it is wrong on purpose (with the reason after it):</span><span data-lang="fr">Un commentaire du fichier fait taire une règle là où elle a tort exprès (avec la raison après) :</span></p>
+  <pre data-title="cpp"><code>const pid_t child = ::fork(); // xstyle: ignore LU-SYSCALL (a process of its own)
+// xstyle: ignore-next CPP-SINGLE-STATEMENT (its state is private)
+// xstyle: ignore-file G-TODO</code></pre>
+  <p><span data-lang="en">From the command line: <code>-i CODES</code> (never these rules), <code>-e PATTERNS</code> (skip these paths); <code>build*</code>, <code>third_party</code>, <code>node_modules</code> and hidden folders are always skipped.</span><span data-lang="fr">En ligne de commande : <code>-i CODES</code> (jamais ces règles), <code>-e MOTIFS</code> (ignorer ces chemins) ; <code>build*</code>, <code>third_party</code>, <code>node_modules</code> et les dossiers cachés sont toujours ignorés.</span></p>
+</section>
+
+<section id="architecture">
+  <h2>7. Architecture</h2>
+  <figure>
+    <div class="fig-scroll" role="region" tabindex="0" aria-label="Figure 1">
+    <svg viewBox="0 0 760 250" role="img" aria-label="Pipeline of xstyle: Core reads the options, Project detects the project, Checker runs the checks on each SourceFile, Reporter prints the issues, the fixes are written back and Git gives the changed lines">
+      <defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="arrow"/></marker></defs>
+      <rect id="a-core" class="box-alt" x="20" y="90" width="120" height="56" rx="8"/><text class="lbl" x="80" y="114" text-anchor="middle">Core</text><text class="small" x="80" y="132" text-anchor="middle">options, files</text>
+      <rect id="a-project" class="box" x="190" y="20" width="130" height="56" rx="8"/><text class="lbl" x="255" y="44" text-anchor="middle">Project</text><text class="small" x="255" y="62" text-anchor="middle">languages, libutils</text>
+      <rect id="a-git" class="box" x="190" y="164" width="130" height="56" rx="8"/><text class="lbl" x="255" y="188" text-anchor="middle">Git</text><text class="small" x="255" y="206" text-anchor="middle">diff, staged, commit</text>
+      <rect id="a-checker" class="box-alt" x="370" y="90" width="130" height="56" rx="8"/><text class="lbl" x="435" y="114" text-anchor="middle">Checker</text><text class="small" x="435" y="132" text-anchor="middle">SourceFile + check/*</text>
+      <rect id="a-reporter" class="box" x="560" y="40" width="180" height="56" rx="8"/><text class="lbl" x="650" y="64" text-anchor="middle">Reporter</text><text class="small" x="650" y="82" text-anchor="middle">text, --rtk, md, json</text>
+      <rect id="a-fix" class="box" x="560" y="140" width="180" height="56" rx="8"/><text class="lbl" x="650" y="164" text-anchor="middle">Fixes</text><text class="small" x="650" y="182" text-anchor="middle">--fix, --force, ask</text>
+      <path class="edge" data-from="a-core" data-to="a-project" marker-end="url(#arr)"/>
+      <path class="edge" data-from="a-core" data-to="a-git" marker-end="url(#arr)"/>
+      <path class="edge" data-from="a-project" data-to="a-checker" marker-end="url(#arr)"/>
+      <path class="edge" data-from="a-git" data-to="a-checker" marker-end="url(#arr)"/>
+      <path class="edge edge-accent" data-from="a-checker" data-to="a-reporter" marker-end="url(#arr)"/>
+      <path class="edge edge-accent" data-from="a-checker" data-to="a-fix" marker-end="url(#arr)"/>
+    </svg>
+    </div>
+    <figcaption><span data-lang="en">Figure 1: from the arguments to the report and the fixes.</span><span data-lang="fr">Figure 1 : des arguments au rapport et aux corrections.</span></figcaption>
+  </figure>
+  <ul class="sources">
+    <li><code>Core.cpp</code>, <code>Core-Completion.cpp</code>: <span data-lang="en">Arguments (libutils ArgParser), file list, fixes, commit, completion scripts</span><span data-lang="fr">Arguments (ArgParser de libutils), liste des fichiers, corrections, commit, scripts de complétion</span></li>
+    <li><code>Project.cpp</code>: <span data-lang="en">Project detection: languages, libutils headers installed</span><span data-lang="fr">Détection du projet : langages, en-têtes libutils installés</span></li>
+    <li><code>SourceFile.cpp</code>: <span data-lang="en">A file read once: code and comments masked apart, blocks, braces</span><span data-lang="fr">Un fichier lu une fois : code et commentaires masqués à part, blocs, accolades</span></li>
+    <li><code>Checker.cpp</code>, <code>check/*.cpp</code>: <span data-lang="en">The rules of each family (generic, cpp, libutils, script, typing, cmake, comments, rust, r34)</span><span data-lang="fr">Les règles de chaque famille (generic, cpp, libutils, script, typing, cmake, comments, rust, r34)</span></li>
+    <li><code>Rules.cpp</code>: <span data-lang="en">Catalogue: code, severity, fix level, languages, description, documentation</span><span data-lang="fr">Catalogue : code, gravité, niveau de correction, langages, description, documentation</span></li>
+    <li><code>Reporter.cpp</code>: <span data-lang="en">Outputs: terminal (colors, hyperlinks), <code>--rtk</code>, Markdown, JSON, summary</span><span data-lang="fr">Sorties : terminal (couleurs, hyperliens), <code>--rtk</code>, Markdown, JSON, résumé</span></li>
+    <li><code>Header.cpp</code>, <code>Git.cpp</code>, <code>R34.cpp</code>: <span data-lang="en">File headers (embedded banner font), git (changed lines, commit), the R34 reminder</span><span data-lang="fr">En-têtes de fichiers (police de bannière embarquée), git (lignes modifiées, commit), le rappel R34</span></li>
+  </ul>
+</section>
+
+<section id="release">
+  <h2>8. <span data-lang="en">Packages &amp; CI</span><span data-lang="fr">Paquets &amp; CI</span></h2>
+  <p><span data-lang="en">The workflows of <a href="https://github.com/TsukiNi22/cpp_project_template">cpp_project_template</a>: unit tests first, then a build check with xstyle run on its own sources, or the signed packages published on <code>gh-pages</code> (<code>[build]</code> in a commit or a <code>vX.Y.Z-pre</code> tag: pre-release, a <code>vX.Y.Z</code> tag: stable + GitHub release from the CHANGELOG).</span><span data-lang="fr">Les workflows de <a href="https://github.com/TsukiNi22/cpp_project_template">cpp_project_template</a> : les tests unitaires d'abord, puis un build de contrôle avec xstyle lancé sur ses propres sources, ou les paquets signés publiés sur <code>gh-pages</code> (<code>[build]</code> dans un commit ou un tag <code>vX.Y.Z-pre</code> : pré-version, un tag <code>vX.Y.Z</code> : stable + release GitHub depuis le CHANGELOG).</span></p>
+  <div class="table-wrap" role="region" tabindex="0" aria-label="Packages"><table>
+    <thead><tr><th scope="col"><span data-lang="en">Package</span><span data-lang="fr">Paquet</span></th><th scope="col"><span data-lang="en">Content</span><span data-lang="fr">Contenu</span></th></tr></thead>
+    <tbody>
+      <tr><td><code>xstyle</code></td><td><span data-lang="en">The default one (<code>xstyle-op</code>)</span><span data-lang="fr">Celui par défaut (<code>xstyle-op</code>)</span></td></tr>
+      <tr><td><code>xstyle-op</code> / <code>-db</code> / <code>-as</code></td><td><span data-lang="en">Optimized / debug / AddressSanitizer build of <code>/usr/bin/xstyle</code> (one at a time)</span><span data-lang="fr">Build optimisé / debug / AddressSanitizer de <code>/usr/bin/xstyle</code> (un seul à la fois)</span></td></tr>
+      <tr><td><code>*-pre</code></td><td><span data-lang="en">Pre-release, obsoleted by a stable one of the same version or higher</span><span data-lang="fr">Pré-version, rendue obsolète par une stable de même version ou plus</span></td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<nav class="pager" aria-label="Pages">
+  <a class="next" href="graph.html"><span data-i18n>Next</span><b data-i18n>Graph</b></a>
+</nav>
+</main>
+</div>
+<footer class="site"><span data-lang="en"><span class="repo-name">xstyle</span> documentation · generated from the <a class="repo-link" href="https://github.com/TsukiNi22/xstyle">repository</a> (<span class="repo-version">v1.0.0</span>, <span class="repo-license">MIT</span>)</span><span data-lang="fr">Documentation de <span class="repo-name">xstyle</span> · générée depuis le <a class="repo-link" href="https://github.com/TsukiNi22/xstyle">dépôt</a> (<span class="repo-version">v1.0.0</span>, <span class="repo-license">MIT</span>)</span></footer>
+<script>
+// French texts of the page (English text -> French text), extend it with the page content
+window.DOC_FR = {
+  "Guide": "Guide",
+  "Technical": "Technique",
+  "Graph": "Graphe",
+  "GitHub repository": "Dépôt GitHub",
+  "Toggle theme": "Changer de thème",
+  "Contents": "Sommaire",
+  "Language": "Langue",
+  "Pages": "Pages",
+  "Copy": "Copier",
+  "Copied": "Copié",
+  "Select & copy": "Sélectionner et copier",
+  "Link to this section": "Lien vers cette section",
+  "Navigation": "Navigation",
+  "Open the navigation": "Ouvrir la navigation",
+  "User guide": "Guide utilisateur",
+  "Developer guide": "Guide développeur",
+  "Technical documentation": "Documentation technique",
+  "Previous": "Précédent",
+  "Next": "Suivant"
+};
+</script>
+<script>
+// Language (English by default, French on demand): [data-i18n] elements and [data-i18n-<attr>] attributes are
+// translated with window.DOC_FR (English text -> French text), [data-lang] blocks are shown for their language only.
+(function () {
+  var root = document.documentElement;
+  var key = (root.getAttribute('data-storage-key') || 'doc') + '-lang';
+  var FR = window.DOC_FR || {};
+  var listeners = [];
+  function tr(s) { return root.lang === 'fr' && Object.prototype.hasOwnProperty.call(FR, s) ? FR[s] : s; }
+  function apply() {
+    document.querySelectorAll('[data-i18n]').forEach(function (el) {
+      if (el.dataset.i18nEn === undefined) el.dataset.i18nEn = el.innerHTML.trim();
+      el.innerHTML = tr(el.dataset.i18nEn);
+    });
+    ['aria-label', 'title', 'placeholder'].forEach(function (attr) {
+      document.querySelectorAll('[data-i18n-' + attr + ']').forEach(function (el) {
+        var store = 'i18nEn' + attr.replace(/-(\w)/g, function (m, c) { return c.toUpperCase(); });
+        if (el.dataset[store] === undefined) el.dataset[store] = el.getAttribute(attr) || '';
+        el.setAttribute(attr, tr(el.dataset[store]));
+      });
+    });
+    document.querySelectorAll('[data-set-lang]').forEach(function (b) {
+      b.classList.toggle('on', b.dataset.setLang === root.lang);
+      b.setAttribute('aria-pressed', b.dataset.setLang === root.lang ? 'true' : 'false');
+    });
+  }
+  function set(lang) {
+    root.lang = lang === 'fr' ? 'fr' : 'en';
+    try { localStorage.setItem(key, root.lang); } catch (e) { /* storage unavailable */ }
+    apply();
+    listeners.forEach(function (f) { f(root.lang); });
+  }
+  var saved = null;
+  try { saved = localStorage.getItem(key); } catch (e) { /* storage unavailable */ }
+  // Choice carried by a link of the site (?lang=): pages opened from file:// don't share their storage
+  var askedLang = new URLSearchParams(location.search).get('lang');
+  if (askedLang === 'en' || askedLang === 'fr') { saved = askedLang; try { localStorage.setItem(key, askedLang); } catch (e) { /* storage unavailable */ } }
+  root.lang = saved === 'fr' ? 'fr' : 'en';
+  window.docI18n = { tr: tr, set: set, onChange: function (f) { listeners.push(f); }, lang: function () { return root.lang; } };
+  document.querySelectorAll('[data-set-lang]').forEach(function (b) {
+    b.addEventListener('click', function () { set(b.dataset.setLang); });
+  });
+  apply();
+})();
+</script>
+<script>
+// Project data from the linked GitHub repository (<html data-repo="owner/repo">): name, latest version, license and
+// URL are fetched (cached 1 h) and replace the written values in .repo-name / .repo-version / .repo-license /
+// .repo-link and in the page title. Offline, private repository or API limit: the written values stay.
+(function () {
+  var root = document.documentElement, repo = root.getAttribute('data-repo') || '';
+  if (!/^[\w.-]+\/[\w.-]+$/.test(repo)) return;
+  var key = (root.getAttribute('data-storage-key') || 'doc') + '-repo', TTL = 3600 * 1000;
+  function apply(info) {
+    if (!info) return;
+    var oldName = (document.querySelector('.repo-name') || {}).textContent;
+    if (info.name) document.querySelectorAll('.repo-name').forEach(function (e) { e.textContent = info.name; });
+    if (info.version) document.querySelectorAll('.repo-version').forEach(function (e) { e.textContent = info.version; });
+    if (info.license) document.querySelectorAll('.repo-license').forEach(function (e) { e.textContent = info.license; });
+    if (info.url) document.querySelectorAll('a.repo-link').forEach(function (e) { e.href = info.url; });
+    if (info.name && oldName && document.title.indexOf(oldName) === 0) document.title = info.name + document.title.slice(oldName.length);
+  }
+  var cached = null;
+  try { cached = JSON.parse(localStorage.getItem(key) || 'null'); } catch (e) { /* storage unavailable */ }
+  if (cached && cached.repo === repo) apply(cached);
+  // A language change rewrites the translated texts from their original: apply the fetched data again
+  if (window.docI18n) window.docI18n.onChange(function () { var c = null; try { c = JSON.parse(localStorage.getItem(key) || 'null'); } catch (e) { /* storage unavailable */ } apply(window.docRepoInfo || c); });
+  if (cached && cached.repo === repo && Date.now() - cached.time < TTL) return;
+  var api = 'https://api.github.com/repos/' + repo;
+  var get = function (u) { return fetch(u, { headers: { Accept: 'application/vnd.github+json' } }).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }); };
+  get(api).then(function (r) {
+    var info = { repo: repo, time: Date.now(), name: r.name, url: r.html_url, license: r.license && r.license.spdx_id && r.license.spdx_id !== 'NOASSERTION' ? r.license.spdx_id : '' };
+    return get(api + '/releases/latest').then(function (rel) { info.version = rel.tag_name; return info; })
+      .catch(function () { return get(api + '/tags?per_page=1').then(function (tags) { if (tags[0]) info.version = tags[0].name; return info; }); })
+      .catch(function () { return info; });
+  }).then(function (info) {
+    window.docRepoInfo = info;
+    apply(info);
+    try { localStorage.setItem(key, JSON.stringify(info)); } catch (e) { /* storage unavailable */ }
+  }).catch(function () { /* keep the written values */ });
+})();
+</script>
+<script>
+(function () {
+  var root = document.documentElement;
+  var key = (root.getAttribute('data-storage-key') || 'doc') + '-theme';
+  var btn = document.getElementById('themeToggle');
+  try { var saved = localStorage.getItem(key); if (saved) root.setAttribute('data-theme', saved); } catch (e) {}
+  var askedTheme = new URLSearchParams(location.search).get('theme'); // carried by a link of the site
+  if (askedTheme === 'dark' || askedTheme === 'light') { root.setAttribute('data-theme', askedTheme); try { localStorage.setItem(key, askedTheme); } catch (e) { /* storage unavailable */ } }
+  function isDark() {
+    return root.getAttribute('data-theme') === 'dark' ||
+      (!root.getAttribute('data-theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  }
+  btn.setAttribute('aria-checked', isDark() ? 'true' : 'false');
+  btn.addEventListener('click', function () {
+    var next = isDark() ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    btn.setAttribute('aria-checked', next === 'dark' ? 'true' : 'false');
+    try { localStorage.setItem(key, next); } catch (e) {}
+  });
+
+  // Highlight the section visible in the summary
+  var links = document.querySelectorAll('.sidebar a[href^="#"]');
+  if (!('IntersectionObserver' in window)) return;
+  var observer = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (!entry.isIntersecting) return;
+      links.forEach(function (a) { a.classList.toggle('active', a.getAttribute('href') === '#' + entry.target.id); });
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+  document.querySelectorAll('main section[id]').forEach(function (s) { observer.observe(s); });
+})();
+
+// Hide the tabs of the pages that don't exist, and the whole bar when a single page remains
+// (online: HEAD request; file://: the page is loaded as a hidden script, a missing file fails to load)
+(function () {
+  var nav = document.querySelector('nav.tabs');
+  if (!nav) return;
+  function done(a, ok) {
+    if (!ok) a.remove();
+    if (nav.querySelectorAll('a').length < 2) nav.hidden = true;
+  }
+  nav.querySelectorAll('a:not(.current)').forEach(function (a) {
+    if (/^https?:$/.test(location.protocol)) {
+      fetch(a.href, { method: 'HEAD' }).then(function (r) { done(a, r.ok); }).catch(function () {});
+      return;
+    }
+    var s = document.createElement('script');
+    var mute = function (e) { if (e.filename === s.src) { e.preventDefault(); e.stopImmediatePropagation(); } }; // an HTML page is not JS
+    window.addEventListener('error', mute, true);
+    s.src = a.href;
+    s.onload = function () { window.removeEventListener('error', mute, true); s.remove(); done(a, true); };
+    s.onerror = function () { window.removeEventListener('error', mute, true); s.remove(); done(a, false); };
+    document.head.appendChild(s);
+  });
+  if (nav.querySelectorAll('a').length < 2) nav.hidden = true;
+})();
+
+// Sidebar (mobile), copy buttons, heading anchors, content tabs
+(function () {
+  var tr = function (s) { return window.docI18n ? window.docI18n.tr(s) : s; };
+  var menu = document.getElementById('menuBtn'), side = document.getElementById('sidebar');
+  if (menu && side) {
+    menu.addEventListener('click', function () { side.classList.toggle('open'); });
+    document.addEventListener('click', function (e) { if (!side.contains(e.target) && !menu.contains(e.target)) side.classList.remove('open'); });
+  }
+  document.querySelectorAll('main pre').forEach(function (pre) {
+    if (pre.dataset.nocopy !== undefined) return;
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'copy'; b.textContent = tr('Copy');
+    b.addEventListener('click', function () {
+      var code = pre.querySelector('code') || pre;
+      var done = function () { b.textContent = tr('Copied'); setTimeout(function () { b.textContent = tr('Copy'); }, 1400); };
+      if (navigator.clipboard) navigator.clipboard.writeText(code.innerText).then(done, function () { b.textContent = tr('Select & copy'); });
+      else b.textContent = tr('Select & copy');
+    });
+    pre.appendChild(b);
+  });
+  document.querySelectorAll('main h2[id], main h3[id], main section[id] > h2').forEach(function (h) {
+    var id = h.id || h.parentElement.id;
+    if (!id || h.querySelector('.anchor')) return;
+    var a = document.createElement('a');
+    a.className = 'anchor'; a.href = '#' + id; a.textContent = '#';
+    a.setAttribute('aria-label', tr('Link to this section'));
+    h.appendChild(a);
+  });
+  document.querySelectorAll('.ctabs').forEach(function (bar) {
+    var group = bar.dataset.tabs;
+    var buttons = bar.querySelectorAll('button');
+    var panels = document.querySelectorAll('.ctab-panel[data-tabs="' + group + '"]');
+    function show(name) {
+      buttons.forEach(function (b) { b.classList.toggle('active', b.dataset.tab === name); });
+      panels.forEach(function (p) { p.classList.toggle('active', p.dataset.tab === name); });
+    }
+    buttons.forEach(function (b) { b.addEventListener('click', function () { show(b.dataset.tab); }); });
+    if (buttons.length) show(buttons[0].dataset.tab);
+  });
+  if (window.docI18n) window.docI18n.onChange(function () {
+    document.querySelectorAll('main pre .copy').forEach(function (b) { b.textContent = tr('Copy'); });
+    document.querySelectorAll('.anchor').forEach(function (a) { a.setAttribute('aria-label', tr('Link to this section')); });
+  });
+})();
+</script>
+<script>
+// Links between the pages of the site carry the language, theme and level (?lang=fr&theme=dark&level=technical):
+// the choice applies to every page, also from file:// where each page has its own storage
+(function () {
+  var root = document.documentElement;
+  function carry(e) {
+    var a = e.target.closest && e.target.closest('a[href]');
+    if (!a || a.target === '_blank') return;
+    var href = a.getAttribute('href');
+    if (!/^[^:?#\/]+\.html(#.*)?$/.test(href) && !/^\.\/[^:?#\/]+\.html(#.*)?$/.test(href)) return; // pages of the same folder only
+    var u = new URL(a.href);
+    u.searchParams.set('lang', root.lang || 'en');
+    if (root.getAttribute('data-theme')) u.searchParams.set('theme', root.getAttribute('data-theme'));
+    if (root.getAttribute('data-level')) u.searchParams.set('level', root.getAttribute('data-level'));
+    a.href = u.href;
+  }
+  document.addEventListener('click', carry, true);
+  document.addEventListener('auxclick', carry, true);
+})();
+</script>
+<script>
+(function () {
+  var rows = Array.prototype.slice.call(document.querySelectorAll('.rules-table tbody tr'));
+  var buttons = Array.prototype.slice.call(document.querySelectorAll('.rule-filters button'));
+  var input = document.querySelector('.rule-search');
+  var family = 'all';
+  function apply() {
+    var q = (input.value || '').toLowerCase();
+    rows.forEach(function (r) {
+      var ok = (family === 'all' || r.dataset.family === family) && (!q || r.textContent.toLowerCase().indexOf(q) >= 0);
+      r.hidden = !ok;
+    });
+  }
+  buttons.forEach(function (b) {
+    b.addEventListener('click', function () {
+      family = b.dataset.family;
+      buttons.forEach(function (o) { o.classList.toggle('on', o === b); o.setAttribute('aria-pressed', o === b ? 'true' : 'false'); });
+      apply();
+    });
+  });
+  input.addEventListener('input', apply);
+})();
+</script>
+</body>
+</html>
