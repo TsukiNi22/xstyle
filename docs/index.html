@@ -301,16 +301,31 @@ html, body { overscroll-behavior: none; }
 :root[data-theme="dark"] .top-actions .theme-switch { border-color: var(--border); box-shadow: none; }
 :root[data-theme="dark"] .top-actions .theme-switch .knob { transform: translateX(26px); }
 @media (max-width: 480px) { .top-actions .divider { display: none; } }
-/* Placeholder page: single column, one "coming soon" panel */
-.layout { grid-template-columns: minmax(0, 1fr); max-width: 880px; }
-.menu-btn { display: none !important; }
-.soon { margin: 8px 0 40px; padding: 48px 32px; border: 3px solid var(--warn); border-radius: 10px; background: var(--warn-soft); text-align: center; }
-.soon .face { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 72px; line-height: 1; font-weight: 700; color: var(--warn); margin: 0 0 20px; letter-spacing: .04em; }
-.soon h2 { font-size: 34px; margin: 0 0 12px; color: var(--warn); }
-.soon p { margin: 0 0 8px; font-size: 17px; max-width: none; }
-.soon p.links { margin-top: 20px; }
-.soon a { font-weight: 600; }
-@media (max-width: 480px) { .soon { padding: 32px 16px; } .soon .face { font-size: 52px; } .soon h2 { font-size: 27px; } }
+/* Technical page of xstyle */
+.sev { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 12.5px; font-weight: 600; border: 1px solid var(--border); background: var(--code-bg); color: var(--text); white-space: nowrap; }
+.sev code, .sev.unforgivable code { color: inherit; background: transparent; }
+.sev.unforgivable { background: var(--warn); border-color: var(--warn); color: var(--surface); }
+.sev.major { background: var(--warn-soft); border-color: var(--warn); color: var(--warn); }
+.sev.minor { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+.sev.mandatory { background: var(--ok-soft); border-color: var(--ok); color: var(--ok); }
+.sev.negligible { color: var(--muted); }
+.rules-count { font-variant-numeric: tabular-nums; }
+.two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+@media (max-width: 860px) { .two { grid-template-columns: minmax(0, 1fr); } }
+table.keep td { white-space: nowrap; }
+.fig-scroll { overflow-x: auto; }
+.sources li { margin: 4px 0; }
+.fig-scroll svg { min-width: 620px; }
+.fig-scroll:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.rule-filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 12px 0; }
+.rule-filters button { font: inherit; font-size: 13.5px; padding: 4px 12px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface); color: var(--text); cursor: pointer; min-height: 32px; }
+.rule-filters button:hover { border-color: var(--accent); }
+.rule-filters button.on { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+.rule-filters button:focus-visible, .rule-filters input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.rule-filters input { font: inherit; font-size: 16px; padding: 4px 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--surface); color: var(--text); min-width: 0; flex: 1 1 160px; }
+.rules-table td:first-child, .rules-table td:nth-child(2) { white-space: nowrap; }
+.rules-table td:nth-child(5) { min-width: 18ch; }
+@media (pointer: coarse) { .rule-filters button { min-height: 44px; } }
 </style>
 </head>
 <body>
@@ -341,17 +356,255 @@ html, body { overscroll-behavior: none; }
   </div>
 </header>
 <div class="layout">
+<aside class="sidebar" id="sidebar">
+  <p data-i18n>Contents</p>
+  <a href="#overview">1. <span data-lang="en">Overview</span><span data-lang="fr">Présentation</span></a>
+  <a href="#install">2. Installation</a>
+  <a href="#usage">3. <span data-lang="en">Usage</span><span data-lang="fr">Utilisation</span></a>
+  <a href="#levels">4. <span data-lang="en">Severities &amp; fixes</span><span data-lang="fr">Gravités &amp; corrections</span></a>
+  <a href="#rules">5. <span data-lang="en">Rules</span><span data-lang="fr">Règles</span></a>
+  <a href="#suppress">6. <span data-lang="en">Suppression</span><span data-lang="fr">Suppression</span></a>
+  <a href="#architecture">7. Architecture</a>
+  <a href="#release">8. <span data-lang="en">Packages &amp; CI</span><span data-lang="fr">Paquets &amp; CI</span></a>
+</aside>
 <main>
 <header>
   <div class="page-eyebrow" data-i18n>Technical documentation</div>
-  <h1><span data-lang="en">Technical documentation</span><span data-lang="fr">Documentation technique</span></h1>
+  <h1><span data-lang="en">xstyle, checker and fixer of the coding style</span><span data-lang="fr">xstyle, vérificateur et correcteur du style de code</span></h1>
+  <p class="lead"><span data-lang="en">C++20 / libutils program checking Tsukini's coding style: C++ first (cpp-style, cpp-comments, the cpp-class layout, libutils usage), then Python, shell, Rust, CMake and the generic rules of every language. Each issue comes with its file, line, rule and proposed fix; what is safe is fixed with <code>--fix</code>.</span><span data-lang="fr">Programme C++20 / libutils qui vérifie le style de code de Tsukini : le C++ d'abord (cpp-style, cpp-comments, la structure cpp-class, l'usage de libutils), puis Python, shell, Rust, CMake et les règles génériques de tous les langages. Chaque problème donne son fichier, sa ligne, sa règle et la correction proposée ; ce qui est sûr est corrigé avec <code>--fix</code>.</span></p>
 </header>
 
-<section class="soon" aria-labelledby="soon-title">
-  <p class="face" aria-hidden="true">&gt;_&lt;</p>
-  <h2 id="soon-title"><span data-lang="en">Coming soon</span><span data-lang="fr">Bientôt disponible</span></h2>
-  <p><span data-lang="en">The technical documentation of this project is not written yet.</span><span data-lang="fr">La documentation technique de ce projet n'est pas encore écrite.</span></p>
-  <p class="links"><span data-lang="en">Meanwhile, the interactive <a href="graph.html">project graph</a> shows the files, classes and relations of the sources.</span><span data-lang="fr">En attendant, le <a href="graph.html">graphe du projet</a> interactif montre les fichiers, classes et relations des sources.</span></p>
+<section id="overview">
+  <h2>1. <span data-lang="en">Overview</span><span data-lang="fr">Présentation</span></h2>
+  <p><span data-lang="en">xstyle reads the files given (or the current directory, recursively), detects the language of each one, runs the rules of that language and prints the issues followed by a summary counting them by severity and by rule. The exit status is 0 when nothing at or above <code>--fail-on</code> is left: the pre-commit hook and the CI use it.</span><span data-lang="fr">xstyle lit les fichiers donnés (ou le dossier courant, récursivement), détecte le langage de chacun, lance les règles de ce langage et affiche les problèmes puis un résumé qui les compte par gravité et par règle. Le code de sortie vaut 0 quand il ne reste rien au niveau de <code>--fail-on</code> ou au-dessus : le hook pre-commit et la CI s'en servent.</span></p>
+  <div class="table-wrap" role="region" tabindex="0" aria-label="Languages"><table class="keep">
+    <thead><tr><th scope="col"><span data-lang="en">Language</span><span data-lang="fr">Langage</span></th><th scope="col"><span data-lang="en">Files</span><span data-lang="fr">Fichiers</span></th><th scope="col"><span data-lang="en">Rules</span><span data-lang="fr">Règles</span></th></tr></thead>
+    <tbody>
+      <tr><td>C / C++</td><td><code>.cpp</code> <code>.hpp</code> <code>.c</code> <code>.h</code></td><td><code>CPP-*</code>, <code>LU-*</code> (libutils)</td></tr>
+      <tr><td>Python</td><td><code>.py</code></td><td><code>PY-*</code></td></tr>
+      <tr><td>Shell</td><td><code>.sh .bash .zsh</code></td><td><code>SH-*</code></td></tr>
+      <tr><td>Rust</td><td><code>.rs</code></td><td><code>RS-*</code></td></tr>
+      <tr><td>CMake</td><td><code>CMakeLists.txt</code>, <code>.cmake</code></td><td><code>CMAKE-*</code></td></tr>
+      <tr><td><span data-lang="en">Every file</span><span data-lang="fr">Tout fichier</span></td><td>Lua, JS / TS, Makefile, YAML, JSON, Markdown...</td><td><code>G-*</code></td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="install">
+  <h2>2. Installation</h2>
+  <p><span data-lang="en">Packages <code>xstyle</code> (RPM, DEB, Arch) from the <code>gh-pages</code> repository of the project, or from <a href="https://tsukini22.github.io/my-universe/">my-universe</a> with every other package of TsukiNi22. They install <code>/usr/bin/xstyle</code> and its bash / zsh / fish completion.</span><span data-lang="fr">Paquets <code>xstyle</code> (RPM, DEB, Arch) depuis le dépôt <code>gh-pages</code> du projet, ou depuis <a href="https://tsukini22.github.io/my-universe/">my-universe</a> avec tous les autres paquets de TsukiNi22. Ils installent <code>/usr/bin/xstyle</code> et sa complétion bash / zsh / fish.</span></p>
+  <div class="ctabs" data-tabs="install"><button type="button" data-tab="universe">my-universe</button><button type="button" data-tab="setup">setup.sh</button><button type="button" data-tab="sources"><span data-lang="en">Sources</span><span data-lang="fr">Sources</span></button></div>
+  <div class="ctab-panel" data-tabs="install" data-tab="universe"><pre data-title="bash"><code>curl -fsSL https://tsukini22.github.io/my-universe/install.sh | bash -s
+sudo dnf install xstyle      # sudo apt install xstyle / sudo pacman -S xstyle</code></pre></div>
+  <div class="ctab-panel" data-tabs="install" data-tab="setup"><pre data-title="bash"><code>curl -fsSL https://raw.githubusercontent.com/TsukiNi22/xstyle/main/setup.sh | bash -s -- --install   # --pre: xstyle-pre</code></pre></div>
+  <div class="ctab-panel" data-tabs="install" data-tab="sources"><pre data-title="bash"><code>git clone https://github.com/TsukiNi22/xstyle.git &amp;&amp; cd xstyle
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Optimized
+cmake --build build --parallel $(nproc)
+cmake --install build --prefix ~/.local     # ~/.local/bin/xstyle + the completions</code></pre></div>
+  <p class="callout"><span data-lang="en">Building needs <code>clang++</code> (C++20), CMake 3.20+ and libutils 4.1.0+ (4.2.0+ on Arch).</span><span data-lang="fr">La compilation demande <code>clang++</code> (C++20), CMake 3.20+ et libutils 4.1.0+ (4.2.0+ sur Arch).</span></p>
+</section>
+
+<section id="usage">
+  <h2>3. <span data-lang="en">Usage</span><span data-lang="fr">Utilisation</span></h2>
+  <pre data-title="bash"><code>xstyle                                 # the current directory, recursive
+xstyle -r src include                  # these directories (recursive with -r)
+xstyle --rtk                           # compact output for an AI (no color, no source line)
+xstyle -s major                        # only the major and unforgivable issues
+xstyle -c CPP-THIS,LU                  # only these rules (code, prefix or pattern)
+xstyle --fix                           # fix what is safe (--force, --dangerous-force: more)
+xstyle --staged --fail-on major        # the staged lines only: the pre-commit hook mode
+xstyle -s major -o report.md           # Markdown report (text / md / json)
+xstyle -x CPP-THIS                     # explain a rule (-L: every rule)</code></pre>
+  <p><span data-lang="en">Every option also has an environment variable (<code>XSTYLE_IGNORE</code>, <code>XSTYLE_EXCLUDE</code>, <code>XSTYLE_RTK</code>, <code>XSTYLE_R34</code>...): <code>xstyle --help</code> lists them.</span><span data-lang="fr">Chaque option a aussi une variable d'environnement (<code>XSTYLE_IGNORE</code>, <code>XSTYLE_EXCLUDE</code>, <code>XSTYLE_RTK</code>, <code>XSTYLE_R34</code>...) : <code>xstyle --help</code> les liste.</span></p>
+</section>
+
+<section id="levels">
+  <h2>4. <span data-lang="en">Severities &amp; fixes</span><span data-lang="fr">Gravités &amp; corrections</span></h2>
+  <div class="two">
+  <div class="table-wrap" role="region" tabindex="0" aria-label="Severities"><table>
+    <thead><tr><th scope="col"><span data-lang="en">Severity</span><span data-lang="fr">Gravité</span></th><th scope="col"><span data-lang="en">Meaning</span><span data-lang="fr">Sens</span></th></tr></thead>
+    <tbody>
+      <tr><td><span class="sev unforgivable">unforgivable</span></td><td><span data-lang="en">Never acceptable (ex: <code>using namespace</code>)</span><span data-lang="fr">Jamais acceptable (ex : <code>using namespace</code>)</span></td></tr>
+      <tr><td><span class="sev major">major</span></td><td><span data-lang="en">Breaks the style, blocks the hook</span><span data-lang="fr">Casse le style, bloque le hook</span></td></tr>
+      <tr><td><span class="sev minor">minor</span></td><td><span data-lang="en">To fix, only warned by the hook</span><span data-lang="fr">À corriger, le hook avertit seulement</span></td></tr>
+      <tr><td><span class="sev negligible">negligible</span></td><td><span data-lang="en">Cosmetic</span><span data-lang="fr">Cosmétique</span></td></tr>
+      <tr><td><span class="sev mandatory">mandatory</span></td><td><span data-lang="en">Shown, never counted (R34)</span><span data-lang="fr">Affichée, jamais comptée (R34)</span></td></tr>
+    </tbody>
+  </table></div>
+  <div class="table-wrap" role="region" tabindex="0" aria-label="Fix levels"><table>
+    <thead><tr><th scope="col">Fix</th><th scope="col"><span data-lang="en">Applied by</span><span data-lang="fr">Appliquée par</span></th></tr></thead>
+    <tbody>
+      <tr><td><code>auto</code></td><td><code>--fix</code></td></tr>
+      <tr><td><code>force</code></td><td><code>--fix --force</code></td></tr>
+      <tr><td><code>dangerous</code></td><td><code>--fix --dangerous-force</code></td></tr>
+      <tr><td><code>ask</code></td><td><span data-lang="en"><code>--fix</code>, after a question</span><span data-lang="fr"><code>--fix</code>, après une question</span></td></tr>
+      <tr><td><code>manual</code></td><td><span data-lang="en">hint only</span><span data-lang="fr">indication seulement</span></td></tr>
+    </tbody>
+  </table></div>
+  </div>
+</section>
+
+<section id="rules">
+  <h2>5. <span data-lang="en">Rules</span><span data-lang="fr">Règles</span> (<span class="rules-count">85</span>)</h2>
+  <p><span data-lang="en">Generated from <code>xstyle --list-rules</code> (<code>docs/scripts/update_rules.py</code>).</span><span data-lang="fr">Générée depuis <code>xstyle --list-rules</code> (<code>docs/scripts/update_rules.py</code>).</span></p>
+  <div class="rule-filters" role="group" aria-label="Family">
+    <button type="button" class="on" data-family="all" aria-pressed="true"><span data-lang="en">All</span><span data-lang="fr">Toutes</span></button>
+    <button type="button" data-family="generic" aria-pressed="false">G</button>
+    <button type="button" data-family="cpp" aria-pressed="false">CPP</button>
+    <button type="button" data-family="libutils" aria-pressed="false">LU</button>
+    <button type="button" data-family="python" aria-pressed="false">PY</button>
+    <button type="button" data-family="shell" aria-pressed="false">SH</button>
+    <button type="button" data-family="rust" aria-pressed="false">RS</button>
+    <button type="button" data-family="cmake" aria-pressed="false">CMAKE</button>
+    <input type="search" class="rule-search" autocomplete="off" aria-label="Filter the rules" placeholder="Filter…">
+  </div>
+  <div class="table-wrap" role="region" tabindex="0" aria-label="Rules"><table class="rules-table">
+    <thead><tr><th scope="col">Code</th><th scope="col"><span data-lang="en">Severity</span><span data-lang="fr">Gravité</span></th><th scope="col">Fix</th><th scope="col"><span data-lang="en">Languages</span><span data-lang="fr">Langages</span></th><th scope="col">Description</th></tr></thead>
+    <tbody>
+<!-- xstyle:rules:start -->
+<tr data-family="mandatory" data-severity="mandatory"><td><code>R34</code></td><td><span class="sev mandatory">mandatory</span></td><td>force</td><td><code>*</code></td><td>Rule 34: if it exists, there is porn of it. No exceptions</td></tr>
+<tr data-family="generic" data-severity="major"><td><code>G-CRLF</code></td><td><span class="sev major">major</span></td><td>auto</td><td><code>*</code></td><td>Windows line endings (CRLF), use LF</td></tr>
+<tr data-family="generic" data-severity="major"><td><code>G-TAB</code></td><td><span class="sev major">major</span></td><td>auto</td><td><code>*</code></td><td>Tab used for the indentation, use 4 spaces (except Makefile recipes)</td></tr>
+<tr data-family="generic" data-severity="minor"><td><code>G-TRAILING</code></td><td><span class="sev minor">minor</span></td><td>auto</td><td><code>*</code></td><td>Trailing whitespace</td></tr>
+<tr data-family="generic" data-severity="minor"><td><code>G-EMPTY-LINES</code></td><td><span class="sev minor">minor</span></td><td>auto</td><td><code>*</code></td><td>Two or more consecutive empty lines, one is the maximum</td></tr>
+<tr data-family="generic" data-severity="negligible"><td><code>G-EOF-NEWLINE</code></td><td><span class="sev negligible">negligible</span></td><td>auto</td><td><code>*</code></td><td>No newline at the end of the file</td></tr>
+<tr data-family="generic" data-severity="negligible"><td><code>G-EOF-EMPTY</code></td><td><span class="sev negligible">negligible</span></td><td>auto</td><td><code>*</code></td><td>Empty lines at the end of the file</td></tr>
+<tr data-family="generic" data-severity="minor"><td><code>G-TODO</code></td><td><span class="sev minor">minor</span></td><td>-</td><td><code>*</code></td><td>TODO / FIXME / XXX tag, describe the limitation in a normal comment instead</td></tr>
+<tr data-family="generic" data-severity="negligible"><td><code>G-INDENT</code></td><td><span class="sev negligible">negligible</span></td><td>-</td><td><code>cpp,c,py,sh,lua,js,rs,cmake</code></td><td>Indentation that is not a multiple of 4 spaces</td></tr>
+<tr data-family="cpp" data-severity="unforgivable"><td><code>CPP-USING-NAMESPACE</code></td><td><span class="sev unforgivable">unforgivable</span></td><td>-</td><td><code>cpp</code></td><td>using namespace, always write the fully qualified names</td></tr>
+<tr data-family="cpp" data-severity="major"><td><code>CPP-GUARD-MISSING</code></td><td><span class="sev major">major</span></td><td>auto</td><td><code>cpp,c</code></td><td>Header without include guard (#ifndef NAME_H / #define NAME_H)</td></tr>
+<tr data-family="cpp" data-severity="minor"><td><code>CPP-PRAGMA-ONCE</code></td><td><span class="sev minor">minor</span></td><td>auto</td><td><code>cpp,c</code></td><td>#pragma once instead of the include guard NAME_H</td></tr>
+<tr data-family="cpp" data-severity="minor"><td><code>CPP-GUARD-NAME</code></td><td><span class="sev minor">minor</span></td><td>auto</td><td><code>cpp,c</code></td><td>Include guard not named after the file (Name.hpp -&gt; NAME_H)</td></tr>
+<tr data-family="cpp" data-severity="negligible"><td><code>CPP-ENDIF-COMMENT</code></td><td><span class="sev negligible">negligible</span></td><td>auto</td><td><code>cpp,c</code></td><td>Guard #endif without its /* NAME_H */ comment</td></tr>
+<tr data-family="cpp" data-severity="negligible"><td><code>CPP-PREPRO-INDENT</code></td><td><span class="sev negligible">negligible</span></td><td>auto</td><td><code>cpp,c</code></td><td>#if block not at the indent of the code around with its content one level more (directives: 4 per #if / guard level)</td></tr>
+<tr data-family="cpp" data-severity="minor"><td><code>CPP-HEADER</code></td><td><span class="sev minor">minor</span></td><td>ask</td><td><code>cpp,c</code></td><td>Missing file header (cpp-class scripts/header.py)</td></tr>
+<tr data-family="cpp" data-severity="negligible"><td><code>CPP-HEADER-FILE</code></td><td><span class="sev negligible">negligible</span></td><td>auto</td><td><code>cpp,c</code></td><td>@file of the header is not the name of the file</td></tr>
+<tr data-family="cpp" data-severity="major"><td><code>CPP-NULL</code></td><td><span class="sev major">major</span></td><td>auto</td><td><code>cpp</code></td><td>NULL instead of nullptr</td></tr>
+<tr data-family="cpp" data-severity="major"><td><code>CPP-C-CAST</code></td><td><span class="sev major">major</span></td><td>auto</td><td><code>cpp</code></td><td>C cast, use static_cast (only (void) is allowed)</td></tr>
+<tr data-family="cpp" data-severity="major"><td><code>CPP-AUTO</code></td><td><span class="sev major">major</span></td><td>-</td><td><code>cpp</code></td><td>auto, write the type (allowed: iterators, structured bindings)</td></tr>
+<tr data-family="cpp" data-severity="major"><td><code>CPP-USING-STD</code></td><td><span class="sev major">major</span></td><td>-</td><td><code>cpp</code></td><td>using std::x, always write std::x</td></tr>
+<tr data-family="cpp" data-severity="minor"><td><code>CPP-TYPEDEF</code></td><td><span class="sev minor">minor</span></td><td>auto</td><td><code>cpp</code></td><td>typedef, use using Name = Type</td></tr>
+<tr data-family="cpp" data-severity="major"><td><code>CPP-BRACE-FUNCTION</code></td><td><span class="sev major">major</span></td><td>auto</td><td><code>cpp,c</code></td><td>Function opening brace on the signature line, it goes on its own line</td></tr>
+<tr data-family="cpp" data-severity="major"><td><code>CPP-BRACE-OWN-LINE</code></td><td><span class="sev major">major</span></td><td>auto</td><td><code>cpp,c</code></td><td>Opening brace of a class / namespace / control block on its own line, it goes on the same line</td></tr>
+<tr data-family="cpp" data-severity="minor"><td><code>CPP-ELSE-LINE</code></td><td><span class="sev minor">minor</span></td><td>auto</td><td><code>cpp,c</code></td><td>else / catch not on the closing brace line (} else {)</td></tr>
+<tr data-family="cpp" data-severity="minor"><td><code>CPP-KEYWORD-SPACE</code></td><td><span class="sev minor">minor</span></td><td>auto</td><td><code>cpp,c</code></td><td>No space between if / for / while / switch / catch and the parenthesis</td></tr>
+<tr data-family="cpp" data-severity="negligible"><td><code>CPP-PAREN-SPACE</code></td><td><span class="sev negligible">negligible</span></td><td>auto</td><td><code>cpp,c</code></td><td>Space inside the parentheses of a control statement</td></tr>
+<tr data-family="cpp" data-severity="negligible"><td><code>CPP-COLON-SPACE</code></td><td><span class="sev negligible">negligible</span></td><td>auto</td><td><code>cpp</code></td><td>Space before &#x27;:&#x27; of a range-for, an inheritance or an enum base</td></tr>
+<tr data-family="cpp" data-severity="minor"><td><code>CPP-PTR-REF</code></td><td><span class="sev minor">minor</span></td><td>auto</td><td><code>cpp,c</code></td><td>&amp; / * glued to the name instead of the type (const T&amp; name, char* buf)</td></tr>
+<tr data-family="cpp" data-severity="minor"><td><code>CPP-VOID-PARAM</code></td><td><span class="sev minor">minor</span></td><td>auto</td><td><code>cpp,c</code></td><td>Empty parameter list, write (void)</td></tr>
+<tr data-family="cpp" data-severity="minor"><td><code>CPP-THIS</code></td><td><span class="sev minor">minor</span></td><td>auto</td><td><code>cpp</code></td><td>Member accessed without this-&gt;</td></tr>
+<tr data-family="cpp" data-severity="minor"><td><code>CPP-NAMESPACE-NESTED</code></td><td><span class="sev minor">minor</span></td><td>-</td><td><code>cpp</code></td><td>Nested namespace blocks, use namespace a::b {</td></tr>
+<tr data-family="cpp" data-severity="negligible"><td><code>CPP-NAMESPACE-COMMENT</code></td><td><span class="sev negligible">negligible</span></td><td>auto</td><td><code>cpp</code></td><td>Namespace block without // namespace start / // namespace end</td></tr>
+<tr data-family="cpp" data-severity="minor"><td><code>CPP-NAMESPACE-INDENT</code></td><td><span class="sev minor">minor</span></td><td>-</td><td><code>cpp</code></td><td>Content of a namespace indented (it is not)</td></tr>
+<tr data-family="cpp" data-severity="minor"><td><code>CPP-INCLUDE-ORDER</code></td><td><span class="sev minor">minor</span></td><td>auto</td><td><code>cpp,c</code></td><td>Include order: personal libs (+ defines), project, external; longest name first</td></tr>
+<tr data-family="cpp" data-severity="major"><td><code>CPP-CLASS-NAME</code></td><td><span class="sev major">major</span></td><td>-</td><td><code>cpp</code></td><td>Class / struct / enum not in PascalCase</td></tr>
+<tr data-family="cpp" data-severity="minor"><td><code>CPP-MEMBER-NAME</code></td><td><span class="sev minor">minor</span></td><td>-</td><td><code>cpp</code></td><td>Class data member not named _camelCase</td></tr>
+<tr data-family="cpp" data-severity="minor"><td><code>CPP-MACRO-NAME</code></td><td><span class="sev minor">minor</span></td><td>-</td><td><code>cpp,c</code></td><td>Macro not in UPPER_SNAKE (or _lower for attribute / section macros)</td></tr>
+<tr data-family="cpp" data-severity="negligible"><td><code>CPP-ONE-LINER</code></td><td><span class="sev negligible">negligible</span></td><td>auto</td><td><code>cpp</code></td><td>One-liner body not written {statement}; (an empty one: { /* Nothing */ };)</td></tr>
+<tr data-family="cpp" data-severity="minor"><td><code>CPP-EMPTY-BODY</code></td><td><span class="sev minor">minor</span></td><td>auto</td><td><code>cpp</code></td><td>Empty constructor / destructor / operator of a class on several lines (one line: sig: init { /* Nothing */ }; // comment)</td></tr>
+<tr data-family="cpp" data-severity="negligible"><td><code>CPP-ONELINER-ALIGN</code></td><td><span class="sev negligible">negligible</span></td><td>auto</td><td><code>cpp</code></td><td>One-liner functions of a group not aligned tight: their { right after the longest signature + 1 (lengths far apart: one column per level of 2+ lines)</td></tr>
+<tr data-family="cpp" data-severity="minor"><td><code>CPP-INIT-COLON</code></td><td><span class="sev minor">minor</span></td><td>auto</td><td><code>cpp</code></td><td>Init list on the line of its constructor: its : glued to the ) (Name(int a): _a{a})</td></tr>
+<tr data-family="cpp" data-severity="negligible"><td><code>CPP-ACCESS-ORDER</code></td><td><span class="sev negligible">negligible</span></td><td>-</td><td><code>cpp</code></td><td>public before private / protected in a class</td></tr>
+<tr data-family="cpp" data-severity="minor"><td><code>CPP-SINGLE-STATEMENT</code></td><td><span class="sev minor">minor</span></td><td>-</td><td><code>cpp</code></td><td>Single statement function defined in the .cpp, define it inline in the header</td></tr>
+<tr data-family="cpp" data-severity="minor"><td><code>CPP-DOXYGEN</code></td><td><span class="sev minor">minor</span></td><td>-</td><td><code>cpp,c</code></td><td>Doxygen comment (@brief, @param, ///, /**), short plain comments only</td></tr>
+<tr data-family="cpp" data-severity="minor"><td><code>CPP-INCLUDE-COMMENT</code></td><td><span class="sev minor">minor</span></td><td>-</td><td><code>cpp,c</code></td><td>Include of a header without its trailing comment listing what is used</td></tr>
+<tr data-family="cpp" data-severity="negligible"><td><code>CPP-COMMENT-ALIGN</code></td><td><span class="sev negligible">negligible</span></td><td>auto</td><td><code>cpp,c</code></td><td>Trailing comments of an include block not aligned on one column</td></tr>
+<tr data-family="cpp" data-severity="minor"><td><code>CPP-EMPTY-SECTION</code></td><td><span class="sev minor">minor</span></td><td>auto</td><td><code>cpp,c</code></td><td>Section separator / class block with nothing linked to it</td></tr>
+<tr data-family="cpp" data-severity="minor"><td><code>CPP-CLASS-BLOCK</code></td><td><span class="sev minor">minor</span></td><td>-</td><td><code>cpp</code></td><td>Declaration in the wrong class block: Pre-Function = declared only (body in the .cpp), Function = defined in the header, Constructor / Destructor = theirs, data members before the blocks (Operator: free)</td></tr>
+<tr data-family="cpp" data-severity="negligible"><td><code>CPP-ORPHAN-GROUP</code></td><td><span class="sev negligible">negligible</span></td><td>auto</td><td><code>cpp,c</code></td><td>/* group */ label with nothing under it</td></tr>
+<tr data-family="cmake" data-severity="minor"><td><code>CMAKE-SECTION-ORDER</code></td><td><span class="sev minor">minor</span></td><td>-</td><td><code>cmake</code></td><td>Sections not in the cmake-style order</td></tr>
+<tr data-family="cmake" data-severity="negligible"><td><code>CMAKE-BANNER</code></td><td><span class="sev negligible">negligible</span></td><td>auto</td><td><code>cmake</code></td><td>Section banner not &#x27;# &#x27; + 25 &#x27;=&#x27;</td></tr>
+<tr data-family="cmake" data-severity="major"><td><code>CMAKE-COMPILER-ORDER</code></td><td><span class="sev major">major</span></td><td>force</td><td><code>cmake</code></td><td>set(CMAKE_CXX_COMPILER) after project(): ignored, it goes before</td></tr>
+<tr data-family="cmake" data-severity="major"><td><code>CMAKE-GLOB-SOURCES</code></td><td><span class="sev major">major</span></td><td>-</td><td><code>cmake</code></td><td>Sources collected with file(GLOB), list them in set(SRC ...)</td></tr>
+<tr data-family="cmake" data-severity="major"><td><code>CMAKE-UNREGISTERED</code></td><td><span class="sev major">major</span></td><td>force</td><td><code>cmake</code></td><td>Source file of src/ missing from set(SRC ...)</td></tr>
+<tr data-family="libutils" data-severity="major"><td><code>LU-INCLUDE</code></td><td><span class="sev major">major</span></td><td>auto</td><td><code>cpp</code></td><td>libutils header included directly, use #define _Section + &lt;utils/utils.hpp&gt;</td></tr>
+<tr data-family="libutils" data-severity="major"><td><code>LU-BARE-INCLUDE</code></td><td><span class="sev major">major</span></td><td>auto</td><td><code>cpp</code></td><td>&lt;utils/utils.hpp&gt; without any #define _Section before it</td></tr>
+<tr data-family="libutils" data-severity="minor"><td><code>LU-SECTION</code></td><td><span class="sev minor">minor</span></td><td>auto</td><td><code>cpp</code></td><td>libutils section used without its #define before &lt;utils/utils.hpp&gt;</td></tr>
+<tr data-family="libutils" data-severity="minor"><td><code>LU-ATTRIBUTE</code></td><td><span class="sev minor">minor</span></td><td>auto</td><td><code>cpp</code></td><td>Standard attribute with a libutils macro equivalent ([[nodiscard]] -&gt; _nodiscard)</td></tr>
+<tr data-family="libutils" data-severity="major"><td><code>LU-MIGRATION</code></td><td><span class="sev major">major</span></td><td>auto</td><td><code>cpp</code></td><td>Deprecated libutils name (migration alias), use the new name</td></tr>
+<tr data-family="libutils" data-severity="major"><td><code>LU-EXCEPTION</code></td><td><span class="sev major">major</span></td><td>-</td><td><code>cpp</code></td><td>Standard exception thrown, use utils::exception::ErrorException</td></tr>
+<tr data-family="libutils" data-severity="minor"><td><code>LU-ARGS</code></td><td><span class="sev minor">minor</span></td><td>-</td><td><code>cpp</code></td><td>Arguments parsed by hand, use utils::arguments::ArgParser</td></tr>
+<tr data-family="libutils" data-severity="minor"><td><code>LU-ANSI</code></td><td><span class="sev minor">minor</span></td><td>-</td><td><code>cpp</code></td><td>Raw ANSI escape sequence, use utils::iomanip</td></tr>
+<tr data-family="libutils" data-severity="minor"><td><code>LU-SOCKET</code></td><td><span class="sev minor">minor</span></td><td>-</td><td><code>cpp</code></td><td>Raw BSD socket, use utils::network (TCPSocket, Server, Client)</td></tr>
+<tr data-family="libutils" data-severity="minor"><td><code>LU-SYSCALL</code></td><td><span class="sev minor">minor</span></td><td>-</td><td><code>cpp</code></td><td>Raw pipe / dup / fork / epoll / shm / dlopen, use utils::encapsulation</td></tr>
+<tr data-family="libutils" data-severity="minor"><td><code>LU-THREADS</code></td><td><span class="sev minor">minor</span></td><td>-</td><td><code>cpp</code></td><td>Hand made thread pool, use utils::pool::Cluster or utils::system::Scheduler</td></tr>
+<tr data-family="libutils" data-severity="minor"><td><code>LU-ANGLE</code></td><td><span class="sev minor">minor</span></td><td>-</td><td><code>cpp</code></td><td>Degree / radian conversion by hand, use utils::math::trigo</td></tr>
+<tr data-family="libutils" data-severity="minor"><td><code>LU-BASE64</code></td><td><span class="sev minor">minor</span></td><td>-</td><td><code>cpp</code></td><td>Hand made base64, use utils::smanip::codec::Base64Codec</td></tr>
+<tr data-family="libutils" data-severity="minor"><td><code>LU-VERBOSE</code></td><td><span class="sev minor">minor</span></td><td>-</td><td><code>cpp</code></td><td>Hand made verbose flag, use utils::verbose (set_verbose, onBasicVerbose)</td></tr>
+<tr data-family="libutils" data-severity="minor"><td><code>LU-DISTANCE</code></td><td><span class="sev minor">minor</span></td><td>-</td><td><code>cpp</code></td><td>Hand made string distance, use utils::algorithms::c2dmp</td></tr>
+<tr data-family="python" data-severity="major"><td><code>PY-WILDCARD-IMPORT</code></td><td><span class="sev major">major</span></td><td>-</td><td><code>py</code></td><td>from x import *, import the names explicitly</td></tr>
+<tr data-family="python" data-severity="major"><td><code>PY-BARE-EXCEPT</code></td><td><span class="sev major">major</span></td><td>-</td><td><code>py</code></td><td>Bare except:, catch the exceptions expected</td></tr>
+<tr data-family="python" data-severity="minor"><td><code>PY-TYPE-HINTS</code></td><td><span class="sev minor">minor</span></td><td>auto</td><td><code>py</code></td><td>Function without type hints (added when certain: literal defaults, None / literal returns)</td></tr>
+<tr data-family="python" data-severity="minor"><td><code>PY-PRINT-ERROR</code></td><td><span class="sev minor">minor</span></td><td>auto</td><td><code>py</code></td><td>print(..., file=stderr), use stderr.write</td></tr>
+<tr data-family="python" data-severity="minor"><td><code>PY-OPEN-ENCODING</code></td><td><span class="sev minor">minor</span></td><td>force</td><td><code>py</code></td><td>open() of a text file without encoding=&quot;utf-8&quot;</td></tr>
+<tr data-family="rust" data-severity="major"><td><code>RS-UNWRAP</code></td><td><span class="sev major">major</span></td><td>-</td><td><code>rs</code></td><td>.unwrap() outside of the tests, propagate with ? (and a context) or handle the error</td></tr>
+<tr data-family="rust" data-severity="major"><td><code>RS-PANIC</code></td><td><span class="sev major">major</span></td><td>-</td><td><code>rs</code></td><td>panic! / process::exit in a library file, todo! / unimplemented! left anywhere</td></tr>
+<tr data-family="rust" data-severity="major"><td><code>RS-GLOB-IMPORT</code></td><td><span class="sev major">major</span></td><td>-</td><td><code>rs</code></td><td>use path::*, import the names explicitly (super::* and preludes excepted)</td></tr>
+<tr data-family="rust" data-severity="minor"><td><code>RS-NAMING</code></td><td><span class="sev minor">minor</span></td><td>-</td><td><code>rs</code></td><td>fn / variables snake_case, types PascalCase, const / static UPPER_SNAKE</td></tr>
+<tr data-family="rust" data-severity="minor"><td><code>RS-UNSAFE</code></td><td><span class="sev minor">minor</span></td><td>-</td><td><code>rs</code></td><td>unsafe block without a // SAFETY: comment explaining why it is sound</td></tr>
+<tr data-family="rust" data-severity="minor"><td><code>RS-PRINT-ERROR</code></td><td><span class="sev minor">minor</span></td><td>auto</td><td><code>rs</code></td><td>Error printed with println!, use eprintln! (stderr)</td></tr>
+<tr data-family="rust" data-severity="minor"><td><code>RS-DBG</code></td><td><span class="sev minor">minor</span></td><td>-</td><td><code>rs</code></td><td>dbg! left in the code</td></tr>
+<tr data-family="shell" data-severity="minor"><td><code>SH-SHEBANG</code></td><td><span class="sev minor">minor</span></td><td>-</td><td><code>sh</code></td><td>Script without shebang (#!/bin/bash)</td></tr>
+<tr data-family="shell" data-severity="minor"><td><code>SH-STRICT</code></td><td><span class="sev minor">minor</span></td><td>force</td><td><code>sh</code></td><td>Bash script without set -euo pipefail</td></tr>
+<tr data-family="shell" data-severity="negligible"><td><code>SH-TEST</code></td><td><span class="sev negligible">negligible</span></td><td>auto</td><td><code>sh</code></td><td>[ ] test in a bash script, use [[ ]]</td></tr>
+<!-- xstyle:rules:end -->
+    </tbody>
+  </table></div>
+</section>
+
+<section id="suppress">
+  <h2>6. <span data-lang="en">Suppression</span><span data-lang="fr">Suppression</span></h2>
+  <p><span data-lang="en">A comment of the file silences a rule where it is wrong on purpose (with the reason after it):</span><span data-lang="fr">Un commentaire du fichier fait taire une règle là où elle a tort exprès (avec la raison après) :</span></p>
+  <pre data-title="cpp"><code>const pid_t child = ::fork(); // xstyle: ignore LU-SYSCALL (a process of its own)
+// xstyle: ignore-next CPP-SINGLE-STATEMENT (its state is private)
+// xstyle: ignore-file G-TODO</code></pre>
+  <p><span data-lang="en">From the command line: <code>-i CODES</code> (never these rules), <code>-e PATTERNS</code> (skip these paths); <code>build*</code>, <code>third_party</code>, <code>node_modules</code> and hidden folders are always skipped.</span><span data-lang="fr">En ligne de commande : <code>-i CODES</code> (jamais ces règles), <code>-e MOTIFS</code> (ignorer ces chemins) ; <code>build*</code>, <code>third_party</code>, <code>node_modules</code> et les dossiers cachés sont toujours ignorés.</span></p>
+</section>
+
+<section id="architecture">
+  <h2>7. Architecture</h2>
+  <figure>
+    <div class="fig-scroll" role="region" tabindex="0" aria-label="Figure 1">
+    <svg viewBox="0 0 760 250" role="img" aria-label="Pipeline of xstyle: Core reads the options, Project detects the project, Checker runs the checks on each SourceFile, Reporter prints the issues, the fixes are written back and Git gives the changed lines">
+      <defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="arrow"/></marker></defs>
+      <rect id="a-core" class="box-alt" x="20" y="90" width="120" height="56" rx="8"/><text class="lbl" x="80" y="114" text-anchor="middle">Core</text><text class="small" x="80" y="132" text-anchor="middle">options, files</text>
+      <rect id="a-project" class="box" x="190" y="20" width="130" height="56" rx="8"/><text class="lbl" x="255" y="44" text-anchor="middle">Project</text><text class="small" x="255" y="62" text-anchor="middle">languages, libutils</text>
+      <rect id="a-git" class="box" x="190" y="164" width="130" height="56" rx="8"/><text class="lbl" x="255" y="188" text-anchor="middle">Git</text><text class="small" x="255" y="206" text-anchor="middle">diff, staged, commit</text>
+      <rect id="a-checker" class="box-alt" x="370" y="90" width="130" height="56" rx="8"/><text class="lbl" x="435" y="114" text-anchor="middle">Checker</text><text class="small" x="435" y="132" text-anchor="middle">SourceFile + check/*</text>
+      <rect id="a-reporter" class="box" x="560" y="40" width="180" height="56" rx="8"/><text class="lbl" x="650" y="64" text-anchor="middle">Reporter</text><text class="small" x="650" y="82" text-anchor="middle">text, --rtk, md, json</text>
+      <rect id="a-fix" class="box" x="560" y="140" width="180" height="56" rx="8"/><text class="lbl" x="650" y="164" text-anchor="middle">Fixes</text><text class="small" x="650" y="182" text-anchor="middle">--fix, --force, ask</text>
+      <path class="edge" data-from="a-core" data-to="a-project" marker-end="url(#arr)"/>
+      <path class="edge" data-from="a-core" data-to="a-git" marker-end="url(#arr)"/>
+      <path class="edge" data-from="a-project" data-to="a-checker" marker-end="url(#arr)"/>
+      <path class="edge" data-from="a-git" data-to="a-checker" marker-end="url(#arr)"/>
+      <path class="edge edge-accent" data-from="a-checker" data-to="a-reporter" marker-end="url(#arr)"/>
+      <path class="edge edge-accent" data-from="a-checker" data-to="a-fix" marker-end="url(#arr)"/>
+    </svg>
+    </div>
+    <figcaption><span data-lang="en">Figure 1: from the arguments to the report and the fixes.</span><span data-lang="fr">Figure 1 : des arguments au rapport et aux corrections.</span></figcaption>
+  </figure>
+  <ul class="sources">
+    <li><code>Core.cpp</code>, <code>Core-Completion.cpp</code>: <span data-lang="en">Arguments (libutils ArgParser), file list, fixes, commit, completion scripts</span><span data-lang="fr">Arguments (ArgParser de libutils), liste des fichiers, corrections, commit, scripts de complétion</span></li>
+    <li><code>Project.cpp</code>: <span data-lang="en">Project detection: languages, libutils headers installed</span><span data-lang="fr">Détection du projet : langages, en-têtes libutils installés</span></li>
+    <li><code>SourceFile.cpp</code>: <span data-lang="en">A file read once: code and comments masked apart, blocks, braces</span><span data-lang="fr">Un fichier lu une fois : code et commentaires masqués à part, blocs, accolades</span></li>
+    <li><code>Checker.cpp</code>, <code>check/*.cpp</code>: <span data-lang="en">The rules of each family (generic, cpp, libutils, script, typing, cmake, comments, rust, r34)</span><span data-lang="fr">Les règles de chaque famille (generic, cpp, libutils, script, typing, cmake, comments, rust, r34)</span></li>
+    <li><code>Rules.cpp</code>: <span data-lang="en">Catalogue: code, severity, fix level, languages, description, documentation</span><span data-lang="fr">Catalogue : code, gravité, niveau de correction, langages, description, documentation</span></li>
+    <li><code>Reporter.cpp</code>: <span data-lang="en">Outputs: terminal (colors, hyperlinks), <code>--rtk</code>, Markdown, JSON, summary</span><span data-lang="fr">Sorties : terminal (couleurs, hyperliens), <code>--rtk</code>, Markdown, JSON, résumé</span></li>
+    <li><code>Header.cpp</code>, <code>Git.cpp</code>, <code>R34.cpp</code>: <span data-lang="en">File headers (embedded banner font), git (changed lines, commit), the R34 reminder</span><span data-lang="fr">En-têtes de fichiers (police de bannière embarquée), git (lignes modifiées, commit), le rappel R34</span></li>
+  </ul>
+</section>
+
+<section id="release">
+  <h2>8. <span data-lang="en">Packages &amp; CI</span><span data-lang="fr">Paquets &amp; CI</span></h2>
+  <p><span data-lang="en">The workflows of <a href="https://github.com/TsukiNi22/cpp_project_template">cpp_project_template</a>: unit tests first, then a build check with xstyle run on its own sources, or the signed packages published on <code>gh-pages</code> (<code>[build]</code> in a commit or a <code>vX.Y.Z-pre</code> tag: pre-release, a <code>vX.Y.Z</code> tag: stable + GitHub release from the CHANGELOG).</span><span data-lang="fr">Les workflows de <a href="https://github.com/TsukiNi22/cpp_project_template">cpp_project_template</a> : les tests unitaires d'abord, puis un build de contrôle avec xstyle lancé sur ses propres sources, ou les paquets signés publiés sur <code>gh-pages</code> (<code>[build]</code> dans un commit ou un tag <code>vX.Y.Z-pre</code> : pré-version, un tag <code>vX.Y.Z</code> : stable + release GitHub depuis le CHANGELOG).</span></p>
+  <div class="table-wrap" role="region" tabindex="0" aria-label="Packages"><table>
+    <thead><tr><th scope="col"><span data-lang="en">Package</span><span data-lang="fr">Paquet</span></th><th scope="col"><span data-lang="en">Content</span><span data-lang="fr">Contenu</span></th></tr></thead>
+    <tbody>
+      <tr><td><code>xstyle</code></td><td><span data-lang="en">The default one (<code>xstyle-op</code>)</span><span data-lang="fr">Celui par défaut (<code>xstyle-op</code>)</span></td></tr>
+      <tr><td><code>xstyle-op</code> / <code>-db</code> / <code>-as</code></td><td><span data-lang="en">Optimized / debug / AddressSanitizer build of <code>/usr/bin/xstyle</code> (one at a time)</span><span data-lang="fr">Build optimisé / debug / AddressSanitizer de <code>/usr/bin/xstyle</code> (un seul à la fois)</span></td></tr>
+      <tr><td><code>*-pre</code></td><td><span data-lang="en">Pre-release, obsoleted by a stable one of the same version or higher</span><span data-lang="fr">Pré-version, rendue obsolète par une stable de même version ou plus</span></td></tr>
+    </tbody>
+  </table></div>
 </section>
 
 <nav class="pager" aria-label="Pages">
@@ -586,6 +839,29 @@ window.DOC_FR = {
   }
   document.addEventListener('click', carry, true);
   document.addEventListener('auxclick', carry, true);
+})();
+</script>
+<script>
+(function () {
+  var rows = Array.prototype.slice.call(document.querySelectorAll('.rules-table tbody tr'));
+  var buttons = Array.prototype.slice.call(document.querySelectorAll('.rule-filters button'));
+  var input = document.querySelector('.rule-search');
+  var family = 'all';
+  function apply() {
+    var q = (input.value || '').toLowerCase();
+    rows.forEach(function (r) {
+      var ok = (family === 'all' || r.dataset.family === family) && (!q || r.textContent.toLowerCase().indexOf(q) >= 0);
+      r.hidden = !ok;
+    });
+  }
+  buttons.forEach(function (b) {
+    b.addEventListener('click', function () {
+      family = b.dataset.family;
+      buttons.forEach(function (o) { o.classList.toggle('on', o === b); o.setAttribute('aria-pressed', o === b ? 'true' : 'false'); });
+      apply();
+    });
+  });
+  input.addEventListener('input', apply);
 })();
 </script>
 </body>
