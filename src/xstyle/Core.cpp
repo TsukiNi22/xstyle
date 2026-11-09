@@ -58,6 +58,19 @@ _cold static std::optional<std::string> choice_hook_(const std::string& value, c
     return "'" + value + "' is not one of: " + list;
 }
 
+_cold static std::filesystem::path libutils_skill_(void)
+{
+    // libutils skill of the ai-utils repository: $XSTYLE_LIBUTILS_SKILL, else the installed skills (~/.claude/skills), else the clone
+    if (const char* env = std::getenv("XSTYLE_LIBUTILS_SKILL"))
+        return env;
+    const char* home = std::getenv("HOME");
+    const std::filesystem::path base = home ? home : "";
+    const std::filesystem::path installed = base / ".claude" / "skills" / "libutils";
+    if (std::filesystem::exists(installed / "reference"))
+        return installed;
+    return base / "personal_delivery" / "other" / "ai-utils" / "libutils" / "libutils";
+}
+
 _cold static bool binary_file_(const std::filesystem::path& path)
 {
     std::ifstream file(path, std::ios::binary);
@@ -135,7 +148,7 @@ _cold void xstyle::Core::setup_(void)
     this->_parser.setFlag("version", {"v", "", "version", ""}, {}, "Version of xstyle");
     this->_parser.setFlag("libcheck", {"", "", "libutils-check", ""}, {}, "Is the libutils skill reference up to date (installed version, libutils repository)? exit 0 yes, 1 no");
     this->_parser.setFlag("completion", {"", "", "completion", ""}, {{"shell", true, [](const std::string& v) {return choice_hook_(v, {"bash", "zsh", "fish"});}}},
-        "Print the completion script of the shell (bash | zsh | fish), installed by the setup.sh of the ai-utils repository");
+        "Print the completion script of the shell (bash | zsh | fish), installed with the packages of xstyle");
     this->_parser.setDefaultUsage();
 
     // Help in the order of the sections (the default one follows the hash order)
@@ -394,7 +407,7 @@ _cold void xstyle::Core::libutilsCheck_(void)
     // Reference of the libutils skill (VERSION.md) vs the installed headers and the libutils repository
     static const std::regex version(R"(Version \(`CMakeLists.txt`\) \| `([^`]+)`)");
     static const std::regex hash(R"(\| Commit \| `([0-9a-f]+)`)");
-    const std::filesystem::path reference = std::filesystem::path(XSTYLE_SKILLS_DIR) / "libutils" / "libutils" / "reference" / "VERSION.md";
+    const std::filesystem::path reference = libutils_skill_() / "reference" / "VERSION.md";
     std::ifstream file(reference);
     const std::string content((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
     std::smatch match;
@@ -434,7 +447,7 @@ _cold void xstyle::Core::libutilsCheck_(void)
         upToDate = upToDate && ahead == "0";
     }
     std::cout << "status: " << (upToDate ? "up to date" : older ? "libutils installed is older than the reference (update it: libutils-install skill, libutils.sh update)"
-        : "outdated (bash " + (std::filesystem::path(XSTYLE_SKILLS_DIR) / "libutils" / "libutils" / "scripts" / "update.sh").string() + " to regenerate the reference)") << std::endl;
+        : "outdated (bash " + (libutils_skill_() / "scripts" / "update.sh").string() + " to regenerate the reference)") << std::endl;
     this->_exit = upToDate ? OK : 1;
 }
 
@@ -481,10 +494,20 @@ _cold void xstyle::Core::help_(const utils::arguments::ArgParser& parser) const
 
 _cold void xstyle::Core::listRules_(void) const
 {
-    std::cout << std::left << std::setw(24) << "Code" << std::setw(14) << "Severity" << std::setw(7) << "Fix" << std::setw(26) << "Languages" << "Description" << "\n";
+    // Columns as wide as their longest value + 2 (a long language list never touches its description)
+    std::size_t code = 4;
+    std::size_t languages = 9;
+    for (const xstyle::Rule& rule: xstyle::rules()) {
+        code = std::max(code, rule.code.size());
+        languages = std::max(languages, rule.languages.size());
+    }
+    const int codeWidth = static_cast<int>(code + 2);
+    const int languagesWidth = static_cast<int>(languages + 2);
+
+    std::cout << std::left << std::setw(codeWidth) << "Code" << std::setw(14) << "Severity" << std::setw(7) << "Fix" << std::setw(languagesWidth) << "Languages" << "Description" << "\n";
     for (const xstyle::Rule& rule: xstyle::rules())
-        std::cout << std::left << std::setw(24) << rule.code << std::setw(14) << xstyle::severity_name(rule.severity) << std::setw(7) << xstyle::fix_mode_name(rule.fix)
-            << std::setw(26) << rule.languages << rule.description << "\n";
+        std::cout << std::left << std::setw(codeWidth) << rule.code << std::setw(14) << xstyle::severity_name(rule.severity) << std::setw(7) << xstyle::fix_mode_name(rule.fix)
+            << std::setw(languagesWidth) << rule.languages << rule.description << "\n";
 }
 
 _cold void xstyle::Core::explain_(void) const
