@@ -1,0 +1,77 @@
+name: Build (CI)
+
+on:
+  workflow_dispatch: # Triggered by Dispatch (CI/CD)
+
+env:
+  # Content of the project (the XSTYLE_PACKAGE_BIN / XSTYLE_PACKAGE_LIB options of the CMakeLists.txt)
+  NAME: "xstyle"
+  PACKAGE_BIN: "ON"
+  PACKAGE_LIB: "OFF"
+
+jobs:
+  build:
+    runs-on: ${{ vars.RUNNER }}
+    defaults:
+      run:
+        shell: bash
+
+    container:
+      image: ghcr.io/tsukini22/ci:latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+
+      - name: Cache ccache
+        uses: actions/cache@v5
+        with:
+          path: /github/home/.cache/ccache
+          key: ccache-${{ runner.os }}-${{ hashFiles('**/*.cpp', '**/*.hpp', 'CMakeLists.txt') }}
+          restore-keys: |
+            ccache-${{ runner.os }}-
+
+      - name: Build (Release)
+        run: |
+          set -e
+          cmake -S . -B build
+          cmake --build build --target release --parallel $(nproc)
+        timeout-minutes: 6
+
+      - name: Show ccache stats
+        run: ccache -s
+
+      - name: Check outputs
+        run: |
+          set -euo pipefail
+          if [ "$PACKAGE_BIN" = "ON" ]; then
+            if [ ! -x "./$NAME" ]; then
+              echo "::error title=Missing executable,file=$NAME::Executable '$NAME' not found at repo root (or not executable)"
+              exit 1
+            fi
+            echo "✓ Executable '$NAME' ok"
+          fi
+          if [ "$PACKAGE_LIB" = "ON" ]; then
+            for suffix in "" _debug _asan; do
+              library="lib${NAME#lib}${suffix}"
+              if ! compgen -G "./build/$library.*" > /dev/null; then
+                echo "::error title=Missing library,file=$library::Library '$library' not found in build/"
+                exit 1
+              fi
+              echo "✓ Library '$library' ok"
+            done
+          fi
+
+      - name: Style check (xstyle on itself)
+        run: |
+          set -euo pipefail
+          status=0
+          ./xstyle -r src include tests CMakeLists.txt --fail-on major --r34 --rtk > style.txt || status=$?
+          { echo '```'; cat style.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+          if [ "$status" -ne 0 ]; then
+            echo "::error title=Style::xstyle found major / unforgivable issues in its own sources (see the job summary)"
+            exit 1
+          fi
+          echo "✓ Style ok"
