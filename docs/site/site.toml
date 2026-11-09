@@ -1,0 +1,53 @@
+# xstyle documentation site (better-html-doc) - build: python3 ~/.claude/skills/better-html-doc/scripts/build_site.py --site docs/site --out docs
+# The built pages are committed in docs/ (published on gh-pages by docs.yml); gen/*.py read the rules and options from ./xstyle (build it first)
+
+[site]
+name = "xstyle"
+langs = ["en", "fr"]
+repo = "https://github.com/TsukiNi22/xstyle"
+edit_url = ""
+pages_url = "https://tsukini22.github.io/xstyle/docs/"
+storage_key = "xstyle-docs"
+logo = "../logo.svg"
+
+[home]
+title = { en = "xstyle documentation", fr = "Documentation de xstyle" }
+tagline = { en = "Checker and fixer of the coding style of TsukiNi22: C++20 and libutils first, then Python, shell, Rust, CMake and the generic rules of every language.", fr = "Vérificateur et correcteur du style de code de TsukiNi22 : C++20 et libutils d'abord, puis Python, shell, Rust, CMake et les règles génériques de tous les langages." }
+changelog = "../../CHANGELOG.md"
+links = [
+    { href = "getting-started.html", text = { en = "Getting started", fr = "Premiers pas" } },
+    { href = "rules.html", text = { en = "Every rule", fr = "Toutes les règles" } },
+    { href = "graph.html", text = { en = "Project graph", fr = "Graphe du projet" } },
+    { href = "https://github.com/TsukiNi22/xstyle", text = "GitHub" },
+    { href = "https://tsukini22.github.io/my-universe/", text = "my-universe" },
+]
+
+[[sections]]
+id = "guide"
+title = { en = "User guide", fr = "Guide utilisateur" }
+desc = { en = "Install, check, fix, use it in git and the CI.", fr = "Installer, vérifier, corriger, l'utiliser dans git et la CI." }
+icon = '<path d="M12 3v12m0 0l-4-4m4 4l4-4M5 19h14"/>'
+
+[[sections]]
+id = "concepts"
+title = { en = "Concepts", fr = "Concepts" }
+desc = { en = "Severities, fix levels and the fix loop, the libutils rules, explained.", fr = "Sévérités, niveaux de fix et boucle de correction, règles libutils, expliqués." }
+icon = '<circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v5M12 12l-6 5M12 12l6 5"/>'
+
+[[sections]]
+id = "reference"
+title = { en = "Reference", fr = "Référence" }
+desc = { en = "Every option, every rule, the languages, suppression and environment.", fr = "Toutes les options, toutes les règles, les langages, la suppression et l'environnement." }
+icon = '<path d="M8 6l-5 6 5 6M16 6l5 6-5 6"/>'
+
+[[sections]]
+id = "resources"
+title = { en = "Resources", fr = "Ressources" }
+desc = { en = "Packages, development, FAQ.", fr = "Paquets, développement, FAQ." }
+icon = '<path d="M5 4h14v16H5zM9 8h6M9 12h6M9 16h4"/>'
+
+[[sections]]
+id = "security"
+title = { en = "Security", fr = "Sécurité" }
+desc = { en = "What xstyle reads, writes and runs, and what it never touches.", fr = "Ce que xstyle lit, écrit et lance, et ce qu'il ne touche jamais." }
+icon = '<path d="M12 3l7 3v6c0 4-3 7-7 9-4-2-7-5-7-9V6z"/>'
