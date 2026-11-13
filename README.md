@@ -282,48 +282,94 @@ Languages: `*` = every file checked.
 | `G-EOF-NEWLINE` | negligible | auto | * | No newline at the end of the file |
 | `G-EOF-EMPTY` | negligible | auto | * | Empty lines at the end of the file |
 | `G-TODO` | minor | - | * | TODO / FIXME / XXX tag, describe the limitation in a normal comment instead |
-| `G-INDENT` | negligible | - | cpp,c,py,sh,lua,js,rs,cmak | eIndentation that is not a multiple of 4 spaces |
+| `G-INDENT` | negligible | - | cpp,c,py,sh,lua,js,rs,cmake | Indentation that is not a multiple of 4 spaces |
 | `CPP-USING-NAMESPACE` | unforgivable | - | cpp | using namespace, always write the fully qualified names |
-| `CPP-GUARD-MISSING` | major | auto | cpp,c | Header without include guard (#ifndef NAME_H / #define NAME_H) |
-| `CPP-PRAGMA-ONCE` | minor | auto | cpp,c | #pragma once instead of the include guard NAME_H |
-| `CPP-GUARD-NAME` | minor | auto | cpp,c | Include guard not named after the file (Name.hpp -> NAME_H) |
-| `CPP-ENDIF-COMMENT` | negligible | auto | cpp,c | Guard #endif without its /* NAME_H */ comment |
-| `CPP-PREPRO-INDENT` | negligible | auto | cpp,c | #if block not at the indent of the code around with its content one level more (directives: 4 per #if / guard level) |
-| `CPP-HEADER` | minor | ask | cpp,c | Missing file header (cpp-class scripts/header.py) |
-| `CPP-HEADER-FILE` | negligible | auto | cpp,c | @file of the header is not the name of the file |
+| `CPP-GUARD-MISSING` | major | auto | cpp | Header without include guard (#ifndef NAME_H / #define NAME_H) |
+| `CPP-PRAGMA-ONCE` | minor | auto | cpp | #pragma once instead of the include guard NAME_H |
+| `CPP-GUARD-NAME` | minor | auto | cpp | Include guard not named after the file (Name.hpp -> NAME_H) |
+| `CPP-ENDIF-COMMENT` | negligible | auto | cpp | Guard #endif without its /* NAME_H */ comment |
+| `CPP-PREPRO-INDENT` | negligible | auto | cpp | #if block not at the indent of the code around with its content one level more (directives: 4 per #if / guard level) |
+| `CPP-HEADER` | minor | ask | cpp | Missing file header (cpp-class scripts/header.py) |
+| `CPP-HEADER-FILE` | negligible | auto | cpp | @file of the header is not the name of the file |
 | `CPP-NULL` | major | auto | cpp | NULL instead of nullptr |
 | `CPP-C-CAST` | major | auto | cpp | C cast, use static_cast (only (void) is allowed) |
 | `CPP-AUTO` | major | - | cpp | auto, write the type (allowed: iterators, structured bindings) |
 | `CPP-USING-STD` | major | - | cpp | using std::x, always write std::x |
 | `CPP-TYPEDEF` | minor | auto | cpp | typedef, use using Name = Type |
-| `CPP-BRACE-FUNCTION` | major | auto | cpp,c | Function opening brace on the signature line, it goes on its own line |
-| `CPP-BRACE-OWN-LINE` | major | auto | cpp,c | Opening brace of a class / namespace / control block on its own line, it goes on the same line |
-| `CPP-ELSE-LINE` | minor | auto | cpp,c | else / catch not on the closing brace line (} else {) |
-| `CPP-KEYWORD-SPACE` | minor | auto | cpp,c | No space between if / for / while / switch / catch and the parenthesis |
-| `CPP-PAREN-SPACE` | negligible | auto | cpp,c | Space inside the parentheses of a control statement |
+| `CPP-BRACE-FUNCTION` | major | auto | cpp | Function opening brace on the signature line, it goes on its own line |
+| `CPP-BRACE-OWN-LINE` | major | auto | cpp | Opening brace of a class / namespace / control block on its own line, it goes on the same line |
+| `CPP-ELSE-LINE` | minor | auto | cpp | else / catch not on the closing brace line (} else {) |
+| `CPP-KEYWORD-SPACE` | minor | auto | cpp | No space between if / for / while / switch / catch and the parenthesis |
+| `CPP-PAREN-SPACE` | negligible | auto | cpp | Space inside the parentheses of a control statement |
 | `CPP-COLON-SPACE` | negligible | auto | cpp | Space before ':' of a range-for, an inheritance or an enum base |
-| `CPP-PTR-REF` | minor | auto | cpp,c | & / * glued to the name instead of the type (const T& name, char* buf) |
-| `CPP-VOID-PARAM` | minor | auto | cpp,c | Empty parameter list, write (void) |
+| `CPP-PTR-REF` | minor | auto | cpp | & / * glued to the name instead of the type (const T& name, char* buf) |
+| `CPP-VOID-PARAM` | minor | auto | cpp | Empty parameter list, write (void) |
 | `CPP-THIS` | minor | auto | cpp | Member accessed without this-> |
 | `CPP-NAMESPACE-NESTED` | minor | - | cpp | Nested namespace blocks, use namespace a::b { |
 | `CPP-NAMESPACE-COMMENT` | negligible | auto | cpp | Namespace block without // namespace start / // namespace end |
 | `CPP-NAMESPACE-INDENT` | minor | - | cpp | Content of a namespace indented (it is not) |
-| `CPP-INCLUDE-ORDER` | minor | auto | cpp,c | Include order: personal libs (+ defines), project, external; longest name first |
+| `CPP-INCLUDE-ORDER` | minor | auto | cpp | Include order: personal libs (+ defines), project, external; longest name first |
 | `CPP-CLASS-NAME` | major | - | cpp | Class / struct / enum not in PascalCase |
 | `CPP-MEMBER-NAME` | minor | - | cpp | Class data member not named _camelCase |
-| `CPP-MACRO-NAME` | minor | - | cpp,c | Macro not in UPPER_SNAKE (or _lower for attribute / section macros) |
+| `CPP-MACRO-NAME` | minor | - | cpp | Macro not in UPPER_SNAKE (or _lower for attribute / section macros) |
 | `CPP-ONE-LINER` | negligible | auto | cpp | One-liner body not written {statement}; (an empty one: { /* Nothing */ };) |
 | `CPP-EMPTY-BODY` | minor | auto | cpp | Empty constructor / destructor / operator of a class on several lines (one line: sig: init { /* Nothing */ }; // comment) |
 | `CPP-ONELINER-ALIGN` | negligible | auto | cpp | One-liner functions of a group not aligned tight: their { right after the longest signature + 1 (lengths far apart: one column per level of 2+ lines) |
 | `CPP-INIT-COLON` | minor | auto | cpp | Init list on the line of its constructor: its : glued to the ) (Name(int a): _a{a}) |
 | `CPP-ACCESS-ORDER` | negligible | - | cpp | public before private / protected in a class |
 | `CPP-SINGLE-STATEMENT` | minor | - | cpp | Single statement function defined in the .cpp, define it inline in the header |
-| `CPP-DOXYGEN` | minor | - | cpp,c | Doxygen comment (@brief, @param, ///, /**), short plain comments only |
-| `CPP-INCLUDE-COMMENT` | minor | - | cpp,c | Include of a header without its trailing comment listing what is used |
-| `CPP-COMMENT-ALIGN` | negligible | auto | cpp,c | Trailing comments of an include block not aligned on one column |
-| `CPP-EMPTY-SECTION` | minor | auto | cpp,c | Section separator / class block with nothing linked to it |
+| `CPP-DOXYGEN` | minor | - | cpp | Doxygen comment (@brief, @param, ///, /**), short plain comments only |
+| `CPP-UNCHECKED-RETURN` | minor | - | cpp | Result of a function returning a value ignored (free functions of the project, libc / POSIX): use it or cast the call to (void) |
+| `CPP-INCLUDE-COMMENT` | minor | - | cpp | Include of a header without its trailing comment listing what is used |
+| `CPP-COMMENT-ALIGN` | negligible | auto | cpp | Trailing comments of an include block not aligned on one column |
+| `CPP-EMPTY-SECTION` | minor | auto | cpp | Section separator / class block with nothing linked to it |
 | `CPP-CLASS-BLOCK` | minor | - | cpp | Declaration in the wrong class block: Pre-Function = declared only (body in the .cpp), Function = defined in the header, Constructor / Destructor = theirs, data members before the blocks (Operator: free) |
-| `CPP-ORPHAN-GROUP` | negligible | auto | cpp,c | /* group */ label with nothing under it |
+| `CPP-ORPHAN-GROUP` | negligible | auto | cpp | /* group */ label with nothing under it |
+| `C-GUARD-MISSING` | major | auto | c | Header without include guard (#ifndef NAME_H / #define NAME_H) |
+| `C-PRAGMA-ONCE` | minor | auto | c | #pragma once instead of the include guard NAME_H |
+| `C-GUARD-NAME` | minor | auto | c | Include guard not named after the file (name.h -> NAME_H) |
+| `C-ENDIF-COMMENT` | negligible | auto | c | Guard #endif without its /* NAME_H */ comment |
+| `C-PREPRO-INDENT` | negligible | auto | c | #if block not at the indent of the code around with its content one level more (directives: 4 per #if / guard level) |
+| `C-HEADER` | minor | ask | c | Missing file header (XARTANIA banner, none or a text: asked by --fix, like the C++) |
+| `C-HEADER-FILE` | negligible | auto | c | @file of the header is not the name of the file |
+| `C-BRACE-FUNCTION` | major | auto | c | Function opening brace on the signature line, it goes on its own line |
+| `C-BRACE-OWN-LINE` | major | auto | c | Opening brace of a struct / union / enum / control block on its own line, it goes on the same line |
+| `C-ELSE-LINE` | minor | auto | c | else not on the closing brace line (} else {) |
+| `C-KEYWORD-SPACE` | minor | auto | c | No space between if / for / while / switch and the parenthesis |
+| `C-PAREN-SPACE` | negligible | auto | c | Space inside the parentheses of a control statement |
+| `C-PTR-REF` | minor | auto | c | * glued to the name instead of the type (char* buf, like the C++) |
+| `C-VOID-PARAM` | minor | auto | c | Empty parameter list, write (void) |
+| `C-INCLUDE-ORDER` | minor | auto | c | Include order: personal libs (+ defines), project, external; longest name first |
+| `C-MACRO-NAME` | minor | - | c | Macro not in UPPER_SNAKE (or _lower for attribute / section macros) |
+| `C-DOXYGEN` | minor | - | c | Doxygen comment (@brief, @param, ///, /**), short plain comments only |
+| `C-INCLUDE-COMMENT` | minor | - | c | Include of a header without its trailing comment listing what is used |
+| `C-COMMENT-ALIGN` | negligible | auto | c | Trailing comments of an include block not aligned on one column |
+| `C-EMPTY-SECTION` | minor | auto | c | Section separator with nothing linked to it |
+| `C-ORPHAN-GROUP` | negligible | auto | c | /* group */ label with nothing under it |
+| `C-UNCHECKED-RETURN` | minor | - | c | Result of a function returning a value ignored (functions of the project, libc / POSIX): use it or cast the call to (void) |
+| `C-TYPE-NAME` | major | - | c | struct / union / enum not in snake_case ending with _s / _u / _e, typedef not ending with _t, enum value not in UPPER_SNAKE |
+| `C-FUNC-NAME` | minor | - | c | Function, parameter or variable not in snake_case (global const: UPPER_SNAKE allowed) |
+| `C-PTR-CHECK` | minor | - | c | Pointer parameter of a non static function dereferenced (p->, p[, *p) before being checked (if (!ptr) return KO;) |
+| `C-FUNC-LENGTH` | minor | - | c | Function body longer than 40 lines of code (empty and comment lines not counted) |
+| `C-NESTING` | minor | - | c | Control blocks (if / for / while / switch / do / else) nested more than 4 levels deep (a bare { } is not a level) |
+| `ASM-HEADER` | minor | ask | asm | Missing file header (the C / C++ one in ; comments: XARTANIA banner, none or a text, asked by --fix) |
+| `ASM-HEADER-FILE` | negligible | auto | asm | @file of the header is not the name of the file |
+| `ASM-SECTION-ORDER` | minor | - | asm | Sections not in the order .data, .rodata, .bss, .text |
+| `ASM-SYMBOL-DECL` | minor | - | asm | extern after a section, global not at the start of section .text, global without its label, extern never used |
+| `ASM-INDENT` | minor | auto | asm | Indentation: section / function label at 0, their content at 4, a local label at its block level and its content (up to its last backward jump) one level more |
+| `ASM-COMMENT-ALIGN` | negligible | auto | asm | Trailing ; comments of consecutive lines not aligned on one column |
+| `ASM-CASE` | negligible | auto | asm | Mnemonic, register, size or directive not in lower case (MOV RAX -> mov rax) |
+| `ASM-LABEL-NAME` | minor | - | asm | Label not in snake_case (local: .snake_case); a static function (not global) starts with _, a global one never does (_start excepted) |
+| `ASM-LOCAL-LABEL` | minor | - | asm | Label only jumped to from its function: make it local (.name) |
+| `ASM-CONST-NAME` | minor | - | asm | equ / %define / %assign / %macro name not in UPPER_SNAKE |
+| `ASM-DATA-NAME` | minor | - | asm | Data label (.data / .rodata / .bss) not in snake_case or named like a register |
+| `ASM-REG-COMMENT` | minor | force | asm | Function label without the comment of its registers (; in: rdi, rsi \| out: rax), written from the registers read / written with --force |
+| `ASM-FALLTHROUGH` | major | - | asm | Function falling through into the next one (its last instruction is not ret / jmp / the exit syscall) |
+| `ASM-CALLEE-SAVED` | major | - | asm | Global function changing rbx, rbp or r12-r15 without push / pop (System V ABI) |
+| `ASM-FRAME` | major | - | asm | push rbp without pop rbp / leave before a ret, or pop rbp / leave without push rbp |
+| `ASM-FRAME-UNUSED` | negligible | - | asm | Stack frame (push rbp / mov rbp, rsp) of a function using no stack: no other push / pop, no call, no [rbp] / [rsp], rsp unchanged |
+| `ASM-SYSCALL-COMMENT` | minor | auto | asm | mov rax, N of a syscall without the comment of its name (; write), written by --fix |
+| `ASM-ZERO-XOR` | negligible | force | asm | mov reg, 0: xor reg, reg (shorter; the flags change: --force) |
 | `CMAKE-SECTION-ORDER` | minor | - | cmake | Sections not in the cmake-style order |
 | `CMAKE-BANNER` | negligible | auto | cmake | Section banner not '# ' + 25 '=' |
 | `CMAKE-COMPILER-ORDER` | major | force | cmake | set(CMAKE_CXX_COMPILER) after project(): ignored, it goes before |
