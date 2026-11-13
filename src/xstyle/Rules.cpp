@@ -111,6 +111,26 @@ _cold const std::vector<xstyle::Rule>& xstyle::rules(void)
         {"C-FUNC-LENGTH",      xstyle::Severity::Minor,        xstyle::FixMode::Manual, "c",            "Function body longer than 40 lines of code (empty and comment lines not counted)"},
         {"C-NESTING",          xstyle::Severity::Minor,        xstyle::FixMode::Manual, "c",            "Control blocks (if / for / while / switch / do / else) nested more than 4 levels deep (a bare { } is not a level)"},
 
+        // Assembly (NASM x86-64; a GAS file only gets ASM-HEADER and the generic rules)
+        {"ASM-HEADER",         xstyle::Severity::Minor,        xstyle::FixMode::Ask,    "asm",          "Missing file header (the C / C++ one in ; comments: XARTANIA banner, none or a text, asked by --fix)"},
+        {"ASM-HEADER-FILE",    xstyle::Severity::Negligible,   xstyle::FixMode::Auto,   "asm",          "@file of the header is not the name of the file"},
+        {"ASM-SECTION-ORDER",  xstyle::Severity::Minor,        xstyle::FixMode::Manual, "asm",          "Sections not in the order .data, .rodata, .bss, .text"},
+        {"ASM-SYMBOL-DECL",    xstyle::Severity::Minor,        xstyle::FixMode::Manual, "asm",          "extern after a section, global not at the start of section .text, global without its label, extern never used"},
+        {"ASM-INDENT",         xstyle::Severity::Minor,        xstyle::FixMode::Auto,   "asm",          "Indentation: section / function label at 0, their content at 4, a local label at its block level and its content (up to its last backward jump) one level more"},
+        {"ASM-COMMENT-ALIGN",  xstyle::Severity::Negligible,   xstyle::FixMode::Auto,   "asm",          "Trailing ; comments of consecutive lines not aligned on one column"},
+        {"ASM-CASE",           xstyle::Severity::Negligible,   xstyle::FixMode::Auto,   "asm",          "Mnemonic, register, size or directive not in lower case (MOV RAX -> mov rax)"},
+        {"ASM-LABEL-NAME",     xstyle::Severity::Minor,        xstyle::FixMode::Manual, "asm",          "Label not in snake_case (local: .snake_case); a static function (not global) starts with _, a global one never does (_start excepted)"},
+        {"ASM-LOCAL-LABEL",    xstyle::Severity::Minor,        xstyle::FixMode::Manual, "asm",          "Label only jumped to from its function: make it local (.name)"},
+        {"ASM-CONST-NAME",     xstyle::Severity::Minor,        xstyle::FixMode::Manual, "asm",          "equ / %define / %assign / %macro name not in UPPER_SNAKE"},
+        {"ASM-DATA-NAME",      xstyle::Severity::Minor,        xstyle::FixMode::Manual, "asm",          "Data label (.data / .rodata / .bss) not in snake_case or named like a register"},
+        {"ASM-REG-COMMENT",    xstyle::Severity::Minor,        xstyle::FixMode::Force,  "asm",          "Function label without the comment of its registers (; in: rdi, rsi | out: rax), written from the registers read / written with --force"},
+        {"ASM-FALLTHROUGH",    xstyle::Severity::Major,        xstyle::FixMode::Manual, "asm",          "Function falling through into the next one (its last instruction is not ret / jmp / the exit syscall)"},
+        {"ASM-CALLEE-SAVED",   xstyle::Severity::Major,        xstyle::FixMode::Manual, "asm",          "Global function changing rbx, rbp or r12-r15 without push / pop (System V ABI)"},
+        {"ASM-FRAME",          xstyle::Severity::Major,        xstyle::FixMode::Manual, "asm",          "push rbp without pop rbp / leave before a ret, or pop rbp / leave without push rbp"},
+        {"ASM-FRAME-UNUSED",   xstyle::Severity::Negligible,   xstyle::FixMode::Manual, "asm",          "Stack frame (push rbp / mov rbp, rsp) of a function using no stack: no other push / pop, no call, no [rbp] / [rsp], rsp unchanged"},
+        {"ASM-SYSCALL-COMMENT", xstyle::Severity::Minor,      xstyle::FixMode::Auto,   "asm",          "mov rax, N of a syscall without the comment of its name (; write), written by --fix"},
+        {"ASM-ZERO-XOR",       xstyle::Severity::Negligible,   xstyle::FixMode::Force,  "asm",          "mov reg, 0: xor reg, reg (shorter; the flags change: --force)"},
+
         // CMake (cmake-style)
         {"CMAKE-SECTION-ORDER", xstyle::Severity::Minor,      xstyle::FixMode::Manual, "cmake",        "Sections not in the cmake-style order"},
         {"CMAKE-BANNER",       xstyle::Severity::Negligible,   xstyle::FixMode::Auto,   "cmake",        "Section banner not '# ' + 25 '='"},
@@ -242,6 +262,7 @@ _cold std::string_view xstyle::language_name(const xstyle::Language language)
         case xstyle::Language::Yaml:       return "YAML";
         case xstyle::Language::Json:       return "JSON";
         case xstyle::Language::Markdown:   return "Markdown";
+        case xstyle::Language::Asm:        return "Assembly (NASM)";
         default:                           return "Other";
     }
 }
@@ -283,6 +304,7 @@ _cold std::string_view xstyle::language_id(const xstyle::Language language)
         case xstyle::Language::Yaml:       return "yaml";
         case xstyle::Language::Json:       return "json";
         case xstyle::Language::Markdown:   return "md";
+        case xstyle::Language::Asm:        return "asm";
         default:                           return "other";
     }
 }
@@ -300,6 +322,7 @@ _cold std::optional<xstyle::Language> xstyle::parse_language(const std::string& 
     if (lower == "makefile") lower = "make";
     if (lower == "yml") lower = "yaml";
     if (lower == "markdown") lower = "md";
+    if (lower == "nasm" || lower == "assembly" || lower == "s") lower = "asm";
     for (std::uint8_t i = 0; i <= static_cast<std::uint8_t>(xstyle::Language::Other); ++i) {
         xstyle::Language language = static_cast<xstyle::Language>(i);
         if (xstyle::language_id(language) == lower) return language;

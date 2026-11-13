@@ -117,6 +117,7 @@ set(SRC_SHARED
     src/xstyle/check/generic.cpp
     src/xstyle/check/cpp.cpp
     src/xstyle/check/c.cpp
+    src/xstyle/check/asm.cpp
     src/xstyle/check/libutils.cpp
     src/xstyle/check/script.cpp
     src/xstyle/check/typing.cpp

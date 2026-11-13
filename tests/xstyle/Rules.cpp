@@ -99,6 +99,7 @@ TEST(Rules, ParseLanguage)
     EXPECT_EQ(xstyle::parse_language("python"), xstyle::Language::Python);
     EXPECT_EQ(xstyle::parse_language("bash"), xstyle::Language::Shell);
     EXPECT_EQ(xstyle::parse_language("rust"), xstyle::Language::Rust);
+    EXPECT_EQ(xstyle::parse_language("nasm"), xstyle::Language::Asm);
     EXPECT_FALSE(xstyle::parse_language("cobol").has_value());
 }
 

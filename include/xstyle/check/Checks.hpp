@@ -53,6 +53,7 @@ struct TypeGuess {
 _hot void generic(const xstyle::SourceFile& file, xstyle::check::Issues& issues);
 _hot void cpp(const xstyle::SourceFile& file, const xstyle::ProjectInfo& project, xstyle::check::Issues& issues);
 _hot void c(const xstyle::SourceFile& file, xstyle::check::Issues& issues); // the C only rules (names, pointer checks, length, nesting)
+_hot void assembly(const xstyle::SourceFile& file, xstyle::check::Issues& issues); // NASM x86-64 (a GAS file: its header only)
 _hot void libutils(const xstyle::SourceFile& file, const xstyle::ProjectInfo& project, xstyle::check::Issues& issues);
 _hot void python(const xstyle::SourceFile& file, xstyle::check::Issues& issues);
 _hot void shell(const xstyle::SourceFile& file, xstyle::check::Issues& issues);

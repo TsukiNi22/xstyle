@@ -68,6 +68,7 @@ _hot std::vector<xstyle::Issue> xstyle::Checker::run_(const xstyle::SourceFile& 
     if (!templateFile) {
         if (file.isCLike()) xstyle::check::cpp(file, this->_project, issues);
         if (language == xstyle::Language::C) xstyle::check::c(file, issues);
+        if (language == xstyle::Language::Asm) xstyle::check::assembly(file, issues);
         if (language == xstyle::Language::Cpp && this->_libutils) xstyle::check::libutils(file, this->_project, issues);
         if (language == xstyle::Language::Python) xstyle::check::python(file, issues);
         if (language == xstyle::Language::Shell) xstyle::check::shell(file, issues);

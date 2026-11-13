@@ -51,6 +51,7 @@ enum class Language: std::uint8_t {
     Yaml,
     Json,
     Markdown,
+    Asm, // NASM (.asm, .s, .S; a GAS file only gets the generic rules)
     Other,
 };
 

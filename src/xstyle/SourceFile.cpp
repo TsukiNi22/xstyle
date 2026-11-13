@@ -89,6 +89,7 @@ _hot void xstyle::SourceFile::analyze_(void)
         case xstyle::Language::Makefile:
         case xstyle::Language::Yaml:       this->maskHash_();  break;
         case xstyle::Language::Lua:        this->maskLua_();   break;
+        case xstyle::Language::Asm:        this->maskAsm_();   break;
         default:                                               break;
     }
     if (this->isCLike()) this->scopes_();
@@ -330,6 +331,39 @@ _hot void xstyle::SourceFile::maskLua_(void)
                 }
             }
             ++j;
+        }
+    }
+}
+
+_hot void xstyle::SourceFile::maskAsm_(void)
+{
+    // NASM: ; to the end of the line, strings in ' " ` (a GAS file: # to the end of the line)
+    static const std::regex gasLine(R"(%(?:[re]?(?:ax|bx|cx|dx|si|di|sp|bp)|r(?:[89]|1[0-5])[dwb]?|[abcd][lh])\b|^\s*\.(?:globl|global|text|data|section|intel_syntax|att_syntax|type|size)\b)");
+    this->_gas = std::any_of(this->_lines.begin(), this->_lines.end(), [](const std::string& line) {return std::regex_search(line, gasLine);});
+    const char mark = this->_gas ? '#' : ';';
+
+    for (std::size_t i = 0; i < this->_lines.size(); ++i) {
+        const std::string& line = this->_lines[i];
+        std::string& code = this->_code[i];
+        std::string& comment = this->_comments[i];
+        char quote = '\0';
+        for (std::size_t j = 0; j < line.size(); ++j) {
+            const char c = line[j];
+            if (quote != '\0') {
+                if (c == quote) quote = '\0';
+                else code[j] = ' ';
+                continue;
+            }
+            if (c == '"' || c == '\'' || c == '`') {
+                quote = c;
+                continue;
+            }
+            if (c != mark) continue;
+            for (std::size_t k = j; k < line.size(); ++k) {
+                comment[k] = line[k];
+                code[k] = ' ';
+            }
+            break;
         }
     }
 }

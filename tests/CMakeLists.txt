@@ -96,6 +96,11 @@ if(XSTYLE_PACKAGE_BIN AND NOT CMAKE_CROSSCOMPILING)
         COMMAND sh -c "d=$(mktemp -d) && printf 'int f(void);\\n\\nvoid g(void)\\n{\\n    f();\\n    (void)f();\\n}\\n' > $d/f.cpp && cd $d && $0 --rtk --r34 -c CPP-UNCHECKED-RETURN f.cpp; rm -rf $d; exit 0" $<TARGET_FILE:xstyle>
     )
     set_tests_properties(Cli.UncheckedReturn PROPERTIES PASS_REGULAR_EXPRESSION "5:5 CPP-UNCHECKED-RETURN.*= 1 issues")
+    # Assembly (NASM): a function falling through, a syscall number without its name
+    add_test(NAME Cli.AsmRules
+        COMMAND sh -c "d=$(mktemp -d) && printf 'section .text\\n    global first\\n\\nfirst:\\n    mov rax, 1\\n    syscall\\n\\n_second:\\n    ret\\n' > $d/f.asm && $0 --rtk --r34 -c ASM-FALLTHROUGH,ASM-SYSCALL-COMMENT $d/f.asm; rm -rf $d; exit 0" $<TARGET_FILE:xstyle>
+    )
+    set_tests_properties(Cli.AsmRules PROPERTIES PASS_REGULAR_EXPRESSION "5:5 ASM-SYSCALL-COMMENT.*6:5 ASM-FALLTHROUGH.*= 2 issues")
     add_test(NAME Cli.Version COMMAND $<TARGET_FILE:xstyle> --version)
     add_test(NAME Cli.ListRulesColumns COMMAND $<TARGET_FILE:xstyle> --list-rules --no-color)
     set_tests_properties(Cli.ListRulesColumns PROPERTIES PASS_REGULAR_EXPRESSION "cmake  +Indentation that is not a multiple of 4")

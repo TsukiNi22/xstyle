@@ -4,7 +4,7 @@
 > Documentation [TsukiNi22/xstyle](https://tsukini22.github.io/xstyle/docs/) (v1.0.0): user guide, concepts, every option and rule (searchable, EN / FR) and the interactive project graph.
 
 Checker and fixer of my coding style, C++ first (`cpp-style`, `cpp-comments`, `cpp-class` layout, libutils
-usage), then Python, shell, Rust and the generic rules of every language. Each issue is printed with its file, line
+usage), then C, assembly (NASM x86-64), Python, shell, Rust and the generic rules of every language. Each issue is printed with its file, line
 and column (terminal hyperlink), the rule broken and the fix proposed; a summary counts the issues by severity
 (**unforgivable**, **major**, **minor**, **negligible**) and by rule, plus one **mandatory** reminder that is never counted
 ([R34](#rule-r34-mandatory)). Everything that can be fixed safely is fixed
@@ -257,6 +257,7 @@ The `LU-*` rules are enabled when libutils is **installed** (`/usr/include`, `/u
 |---|---|---|
 | C++ | `.cpp .cc .cxx .hpp .hh .hxx .ipp .tpp .inl .h` | generic + `CPP-*` + `LU-*` (libutils installed and used) |
 | C | `.c` (+ `.h` of a project without C++ sources) | generic + `C-*` (the layout rules shared with the C++ under their own `C-` code, then the C rules) |
+| Assembly (NASM x86-64) | `.asm .nasm .s .S` | generic + `ASM-*` (a GAS file, AT&T or `.intel_syntax`: `ASM-HEADER` + generic only) |
 | Rust | `.rs` | generic + `RS-*` (tests: `#[cfg(test)]` module, `tests/`, `benches/`, `examples/` excepted for unwrap / panic) |
 | Python | `.py` | generic + `PY-*` |
 | Shell | `.sh .bash` | generic + `SH-*` |

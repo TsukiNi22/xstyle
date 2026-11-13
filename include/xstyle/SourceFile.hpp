@@ -79,6 +79,7 @@ class SourceFile {
         std::filesystem::path _path;
         std::string _display; // path shown in the reports
         xstyle::Language _language = xstyle::Language::Other;
+        bool _gas = false;
         std::vector<std::string> _lines;
         std::vector<std::string> _code; // comments & string contents replaced by spaces (same columns)
         std::vector<std::string> _comments; // only the comments (the rest replaced by spaces)
@@ -92,6 +93,7 @@ class SourceFile {
         _hot void maskCLike_(void);
         _hot void maskHash_(void);
         _hot void maskLua_(void);
+        _hot void maskAsm_(void);
         _hot void scopes_(void);
 
     public:
@@ -117,6 +119,7 @@ class SourceFile {
         _cold _nodiscard inline bool hasFinalNewline(void) const                         {return this->_finalNewline;};
         _cold _nodiscard inline bool hasCrlf(void) const                                 {return this->_crlf;};
         /* tools */
+        _hot _nodiscard inline bool isGas(void) const   {return this->_gas;}; // assembly in the GAS syntax (AT&T or .intel_syntax): generic rules only
         _hot _nodiscard inline bool isCLike(void) const {return this->_language == xstyle::Language::Cpp || this->_language == xstyle::Language::C;};
 
         // ------------ Operator ---------- //

@@ -89,7 +89,7 @@ _cold void xstyle::Core::setup_(void)
     };
     const std::function<std::optional<std::string>(const std::string&)> languages = [](const std::string& v) -> std::optional<std::string> {
         for (const std::string& part: xstyle::split(v, ','))
-            if (!xstyle::parse_language(part)) return "'" + part + "' is not a language: cpp, c, py, sh, rs, lua, js, cmake, make, yaml, json, md";
+            if (!xstyle::parse_language(part)) return "'" + part + "' is not a language: cpp, c, asm, py, sh, rs, lua, js, cmake, make, yaml, json, md";
         return std::nullopt;
     };
 
@@ -101,7 +101,7 @@ _cold void xstyle::Core::setup_(void)
     this->_parser.setFlag("fail", {"F", "", "fail-on", ""}, {{"level", true, severity}}, "Exit 1 only if an issue of this severity or above is left (default: negligible)");
     this->_parser.setFlag("exclude", {"e", "", "exclude", "XSTYLE_EXCLUDE"}, {{"patterns", true, utils::arguments::defaultTrueParsingHook}},
         "Skip the paths matching these patterns, comma separated (folder name, path prefix or glob: build,third_party,*.gen.hpp)");
-    this->_parser.setFlag("lang", {"l", "", "lang", ""}, {{"languages", true, languages}}, "Only these languages, comma separated (cpp,c,py,sh,rs,lua,js,cmake,make,yaml,json,md)");
+    this->_parser.setFlag("lang", {"l", "", "lang", ""}, {{"languages", true, languages}}, "Only these languages, comma separated (cpp,c,asm,py,sh,rs,lua,js,cmake,make,yaml,json,md)");
     this->_parser.setFlag("top", {"t", "", "top", ""}, {}, "Only the most used language of the files found");
     this->_parser.setFlag("mode", {"m", "", "mode", "XSTYLE_MODES"}, {{"levels", true, [](const std::string& v) -> std::optional<std::string> {
         for (const std::string& part: xstyle::split(v, ','))
@@ -317,8 +317,9 @@ _cold xstyle::Files xstyle::Core::collect_(const xstyle::ProjectInfo& project) c
 _cold std::vector<xstyle::AppliedFix> xstyle::Core::header_(const xstyle::Checker& checker, xstyle::SourceFile& source)
 {
     // Missing file header: --header, else asked when there is a terminal (skipped otherwise)
-    const std::string code = source.getLanguage() == xstyle::Language::C ? "C-HEADER" : "CPP-HEADER";
-    if (!source.isCLike() || !checker.wants(code)) return {};
+    const bool assembly = source.getLanguage() == xstyle::Language::Asm;
+    const std::string code = assembly ? "ASM-HEADER" : source.getLanguage() == xstyle::Language::C ? "C-HEADER" : "CPP-HEADER";
+    if ((!source.isCLike() && !assembly) || !checker.wants(code)) return {};
     const std::vector<xstyle::Issue> issues = checker.check(source);
     if (std::none_of(issues.begin(), issues.end(), [&code](const xstyle::Issue& issue) {return issue.code == code;})) return {};
 
@@ -357,6 +358,9 @@ _cold std::vector<xstyle::AppliedFix> xstyle::Core::header_(const xstyle::Checke
     }
 
     std::vector<std::string> header = xstyle::make_header(source.getPath().filename().string(), banner, description);
+    if (assembly) // the same header in ; comments
+        for (std::size_t i = 0; i < header.size(); ++i)
+            header[i] = i == 0 || i + 1 == header.size() ? ";" + std::string(header[i].size() - 1, '*') : xstyle::is_blank(header[i]) ? ";" : "; " + header[i];
     header.push_back("");
     source.apply({xstyle::Fix{xstyle::FixKind::Replace, 0, 0, header, false}});
     return {xstyle::AppliedFix{code, 1, {}, header}};
