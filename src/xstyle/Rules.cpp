@@ -73,6 +73,7 @@ _cold const std::vector<xstyle::Rule>& xstyle::rules(void)
         {"CPP-ACCESS-ORDER",   xstyle::Severity::Negligible,   xstyle::FixMode::Manual, "cpp",          "public before private / protected in a class"},
         {"CPP-SINGLE-STATEMENT", xstyle::Severity::Minor,      xstyle::FixMode::Manual, "cpp",          "Single statement function defined in the .cpp, define it inline in the header"},
         {"CPP-DOXYGEN",        xstyle::Severity::Minor,        xstyle::FixMode::Manual, "cpp",          "Doxygen comment (@brief, @param, ///, /**), short plain comments only"},
+        {"CPP-UNCHECKED-RETURN", xstyle::Severity::Minor,      xstyle::FixMode::Manual, "cpp",          "Result of a function returning a value ignored (free functions of the project, libc / POSIX): use it or cast the call to (void)"},
 
         // C++ comments (cpp-comments)
         {"CPP-INCLUDE-COMMENT", xstyle::Severity::Minor,      xstyle::FixMode::Manual, "cpp",          "Include of a header without its trailing comment listing what is used"},
@@ -103,6 +104,7 @@ _cold const std::vector<xstyle::Rule>& xstyle::rules(void)
         {"C-COMMENT-ALIGN",    xstyle::Severity::Negligible,   xstyle::FixMode::Auto,   "c",            "Trailing comments of an include block not aligned on one column"},
         {"C-EMPTY-SECTION",    xstyle::Severity::Minor,        xstyle::FixMode::Auto,   "c",            "Section separator with nothing linked to it"},
         {"C-ORPHAN-GROUP",     xstyle::Severity::Negligible,   xstyle::FixMode::Auto,   "c",            "/* group */ label with nothing under it"},
+        {"C-UNCHECKED-RETURN", xstyle::Severity::Minor,        xstyle::FixMode::Manual, "c",            "Result of a function returning a value ignored (functions of the project, libc / POSIX): use it or cast the call to (void)"},
         {"C-TYPE-NAME",        xstyle::Severity::Major,        xstyle::FixMode::Manual, "c",            "struct / union / enum not in snake_case ending with _s / _u / _e, typedef not ending with _t, enum value not in UPPER_SNAKE"},
         {"C-FUNC-NAME",        xstyle::Severity::Minor,        xstyle::FixMode::Manual, "c",            "Function, parameter or variable not in snake_case (global const: UPPER_SNAKE allowed)"},
         {"C-PTR-CHECK",        xstyle::Severity::Minor,        xstyle::FixMode::Manual, "c",            "Pointer parameter of a non static function dereferenced (p->, p[, *p) before being checked (if (!ptr) return KO;)"},

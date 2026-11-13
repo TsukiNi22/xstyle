@@ -91,6 +91,11 @@ if(XSTYLE_PACKAGE_BIN AND NOT CMAKE_CROSSCOMPILING)
         COMMAND sh -c "d=$(mktemp -d) && printf 'typedef struct Node {\\n    int v;\\n} Node;\\n\\nint getValue(Node* node)\\n{\\n    return node->v;\\n}\\n' > $d/f.c && $0 --rtk --r34 -c C-TYPE-NAME,C-FUNC-NAME,C-PTR-CHECK $d/f.c; rm -rf $d; exit 0" $<TARGET_FILE:xstyle>
     )
     set_tests_properties(Cli.CRules PROPERTIES PASS_REGULAR_EXPRESSION "= 4 issues")
+    # The result of a function of the project ignored (C and C++), (void) accepted
+    add_test(NAME Cli.UncheckedReturn
+        COMMAND sh -c "d=$(mktemp -d) && printf 'int f(void);\\n\\nvoid g(void)\\n{\\n    f();\\n    (void)f();\\n}\\n' > $d/f.cpp && cd $d && $0 --rtk --r34 -c CPP-UNCHECKED-RETURN f.cpp; rm -rf $d; exit 0" $<TARGET_FILE:xstyle>
+    )
+    set_tests_properties(Cli.UncheckedReturn PROPERTIES PASS_REGULAR_EXPRESSION "5:5 CPP-UNCHECKED-RETURN.*= 1 issues")
     add_test(NAME Cli.Version COMMAND $<TARGET_FILE:xstyle> --version)
     add_test(NAME Cli.ListRulesColumns COMMAND $<TARGET_FILE:xstyle> --list-rules --no-color)
     set_tests_properties(Cli.ListRulesColumns PROPERTIES PASS_REGULAR_EXPRESSION "cmake  +Indentation that is not a multiple of 4")

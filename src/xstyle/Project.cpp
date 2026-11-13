@@ -12,6 +12,7 @@ File Description:
 
 #define _Attribute
 #include <utils/utils.hpp>
+#include "xstyle/SourceFile.hpp"
 #include "xstyle/Project.hpp"
 #include "xstyle/Tools.hpp"
 #include <unordered_map>
@@ -165,8 +166,33 @@ _cold bool xstyle::skipped_directory(const std::string& name)
     return name.starts_with(".") || skipped.contains(name) || name.starts_with("build") || name.starts_with("cmake-build");
 }
 
+_cold static void declarations_(const std::filesystem::path& path, const xstyle::Language language, xstyle::ProjectInfo& project)
+{
+    // Free functions declared / defined at the file / namespace level: <type> name(...) -> returning, void name(...) -> voidFunctions
+    static const std::regex head(R"(^\s*(.*?)((?:\w+::)*)(~?\w+)\s*\()");
+    static const std::regex noise(R"(\[\[[^\]]*\]\]|\b_[a-z]\w*(?:\([^()]*\))?|\b(?:static|inline|extern|constexpr|consteval|virtual|explicit|friend|const)\b|template\s*<[^>]*>)");
+    static const std::regex type(R"(^[\w:<>,\s*&]*[\w>*&]$)");
+    const xstyle::SourceFile source(path, path.string(), language);
+    const std::vector<std::string>& code = source.getCode();
+    const std::vector<xstyle::LineInfo>& info = source.getInfo();
+
+    for (std::size_t i = 0; i < code.size(); ++i) {
+        std::smatch match;
+        if (info[i].preprocessor || info[i].inFunction || info[i].parenDepth > 0 || code[i].find('(') == std::string::npos) continue;
+        const xstyle::Scope scope = source.scopeAt(i);
+        if (scope != xstyle::Scope::Global && scope != xstyle::Scope::Namespace && scope != xstyle::Scope::Extern) continue;
+        if (!std::regex_search(code[i], match, head) || code[i].find("typedef") != std::string::npos) continue;
+        const std::string prefix = xstyle::trim(std::regex_replace(match[1].str(), noise, " "));
+        const std::string name = match[3].str();
+        if (prefix.empty() || name.starts_with("~") || name == "operator" || prefix.find_first_of("=(.") != std::string::npos || prefix.find("return") != std::string::npos) continue;
+        if (prefix == "void") project.voidFunctions.insert(name);
+        else if (std::regex_match(prefix, type)) project.returning.insert(name);
+    }
+}
+
 _cold void xstyle::scan_sources(xstyle::ProjectInfo& project)
 {
+    std::vector<std::pair<std::filesystem::path, xstyle::Language>> sources;
     std::size_t c = 0;
     std::size_t cpp = 0;
     std::size_t walked = 0;
@@ -178,13 +204,23 @@ _cold void xstyle::scan_sources(xstyle::ProjectInfo& project)
             if (xstyle::skipped_directory(it->path().filename().string())) it.disable_recursion_pending();
             continue;
         }
-        const std::string extension = xstyle::lower(it->path().extension().string());
-        if (extension == ".h") continue; // C or C++: what is decided here
         const xstyle::Language language = xstyle::language_of(it->path());
+        if (language != xstyle::Language::C && language != xstyle::Language::Cpp) continue;
+        if (sources.size() < MAX_SCANNED_SOURCES && it->file_size(error) <= MAX_SCANNED_SIZE) sources.push_back({it->path(), language});
+        if (xstyle::lower(it->path().extension().string()) == ".h") continue; // C or C++: what is decided here
         if (language == xstyle::Language::C) ++c;
         if (language == xstyle::Language::Cpp) ++cpp;
     }
     project.cProject = c > 0 && cpp == 0;
+
+    // Their function declarations (a .h read as C or C++, its declarations are the same)
+    for (const auto &[path, language]: sources) {
+        try {
+            declarations_(path, language, project);
+        } catch (const std::exception&) {
+            continue; // unreadable: its declarations are only missing
+        }
+    }
 }
 
 _cold xstyle::Language xstyle::language_of(const std::filesystem::path& path)

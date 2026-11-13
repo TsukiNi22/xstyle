@@ -27,6 +27,8 @@ File Description:
     /* DEFINE */
 
     #define MAX_PROJECT_FILES 20000 // Entries walked in the project to read its sources
+    #define MAX_SCANNED_SOURCES 3000 // C / C++ files read for their function declarations
+    #define MAX_SCANNED_SIZE 1048576 // Bytes of a C / C++ file read for its function declarations
 
 namespace xstyle { // namespace start
 //----------------------------------------------------------------//

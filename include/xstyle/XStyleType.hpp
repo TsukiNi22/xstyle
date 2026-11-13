@@ -143,6 +143,8 @@ struct ProjectInfo {
     std::vector<xstyle::Migration> migrations; // parsed from the installed headers
     std::unordered_set<std::string> attributeMacros; // _hot, _cold... (installed headers or fallback)
     bool cProject = false; // .c sources and no C++ ones in the whole project: its .h are C
+    std::unordered_set<std::string> returning; // free functions of the project returning a value (their result must be used or cast to (void))
+    std::unordered_set<std::string> voidFunctions; // free functions of the project returning void (a name in both sets is ambiguous: never reported)
 };
 
 struct Options {

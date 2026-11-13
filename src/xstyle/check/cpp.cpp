@@ -571,6 +571,47 @@ _hot static void casts_(const xstyle::SourceFile& file, xstyle::check::Issues& i
     }
 }
 
+_hot static void returns_(const xstyle::SourceFile& file, const xstyle::ProjectInfo& project, xstyle::check::Issues& issues)
+{
+    // A call alone in its statement (name(...);) of a function returning a value: its result is lost (C / C++ free functions)
+    static const std::unordered_set<std::string> system = {"malloc", "calloc", "realloc", "strdup", "strndup", "fopen", "fdopen", "freopen", "open", "openat",
+        "read", "write", "pread", "pwrite", "pipe", "pipe2", "fork", "dup", "dup2", "chdir", "getline", "getdelim", "fgets", "fread", "fwrite", "scanf", "fscanf",
+        "sscanf", "setenv", "unsetenv", "putenv", "pthread_create", "pthread_join", "mkdir", "rmdir", "unlink", "rename", "stat", "lstat", "fstat", "opendir",
+        "socket", "bind", "listen", "accept", "connect", "send", "recv", "sendto", "recvfrom", "select", "poll", "epoll_create", "epoll_create1", "epoll_ctl",
+        "epoll_wait", "waitpid", "execve", "execvp", "execv", "execl", "execlp", "mmap", "munmap", "ftruncate", "lseek", "kill", "tcgetattr", "tcsetattr",
+        "posix_memalign", "realpath", "getcwd", "fseek", "ftell", "ioctl", "shm_open", "sem_open", "dlopen", "dlsym", "strtol", "strtoul", "strtod", "atoi"};
+    static const std::regex call(R"(^\s*(::)?((?:\w+::)*)(\w+)\s*\()");
+    static const std::regex control(R"(^\s*(?:\}\s*)?(?:else\b.*|do|(?:if|for|while)\s*\(.*\))\s*$)");
+    static const std::regex upper(R"(^[A-Z][A-Z0-9_]*$)");
+    const std::vector<std::string>& code = file.getCode();
+    const std::vector<xstyle::LineInfo>& info = file.getInfo();
+
+    for (std::size_t i = 0; i < code.size(); ++i) {
+        std::smatch match;
+        if (!info[i].inFunction || info[i].preprocessor || info[i].parenDepth > 0 || code[i].find('(') == std::string::npos || !std::regex_search(code[i], match, call)) continue;
+        const std::string qualifier = match[2].str();
+        const std::string name = match[3].str();
+        if (std::regex_match(name, upper) || qualifier.starts_with("std::") || project.voidFunctions.contains(name)) continue;
+        const bool known = project.returning.contains(name) || (qualifier.empty() && system.contains(name));
+        if (!known) continue;
+
+        // The start of a statement: after ; { } : or a control header without braces
+        const std::size_t previous = previous_code_(file, i);
+        const std::string before = previous == NO_INDEX ? "" : rstrip_(code[previous]);
+        if (!before.empty() && std::string(";{}:").find(before.back()) == std::string::npos && !std::regex_match(before, control)) continue;
+
+        // The whole statement: the call, then only its ;
+        std::string statement;
+        for (std::size_t k = i; k < code.size() && k < i + 12; ++k)
+            statement += code[k] + " ";
+        const std::size_t open = statement.find('(', static_cast<std::size_t>(match.position(3)));
+        const std::size_t close = matching_(statement, open);
+        if (close == std::string::npos || xstyle::trim(statement.substr(close + 1)).rfind(';', 0) != 0) continue;
+        issues.push_back(xstyle::check::make_issue(file, i, static_cast<std::size_t>(match.position(3)), "CPP-UNCHECKED-RETURN", "Result of " + name + "() ignored",
+            "use it (check the error), or write (void)" + name + "(...); to ignore it on purpose"));
+    }
+}
+
 /* checks: file structure */
 _hot static void header_(const xstyle::SourceFile& file, xstyle::check::Issues& issues)
 {
@@ -1139,6 +1180,7 @@ _hot void xstyle::check::cpp(const xstyle::SourceFile& file, const xstyle::Proje
     braces_(file, issues);
     spacing_(file, issues);
     functions_(file, project, issues);
+    returns_(file, project, issues);
     if (file.getLanguage() == xstyle::Language::Cpp) casts_(file, issues);
     if (file.getLanguage() == xstyle::Language::Cpp) oneliners_(file, issues);
     header_(file, issues);
