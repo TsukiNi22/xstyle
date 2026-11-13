@@ -15,6 +15,7 @@ File Description:
 #include "xstyle/Project.hpp"
 #include "xstyle/Tools.hpp"
 #include <unordered_map>
+#include <unordered_set>
 #include <algorithm>
 #include <fstream>
 #include <cstdlib>
@@ -115,10 +116,12 @@ _cold xstyle::ProjectInfo xstyle::detect_project(const std::filesystem::path& st
     xstyle::ProjectInfo project;
     std::error_code error;
 
-    // Root: the closest git repository, else the starting directory
+    // Root: the closest git repository, else the working directory (the starting one when it is outside)
     std::filesystem::path dir = std::filesystem::absolute(start, error);
     if (!std::filesystem::is_directory(dir, error)) dir = dir.parent_path();
-    project.root = dir;
+    const std::filesystem::path cwd = std::filesystem::current_path(error);
+    const std::filesystem::path inside = std::filesystem::proximate(dir, cwd, error);
+    project.root = !inside.empty() && !inside.string().starts_with("..") ? cwd : dir;
     for (std::filesystem::path p = dir; !p.empty(); p = p.parent_path()) {
         if (std::filesystem::exists(p / ".git", error)) {
             project.root = p;
@@ -153,6 +156,35 @@ _cold xstyle::ProjectInfo xstyle::detect_project(const std::filesystem::path& st
     parse_attributes_(project);
     if (project.libutilsInstalled) parse_migrations_(project);
     return project;
+}
+
+_cold bool xstyle::skipped_directory(const std::string& name)
+{
+    static const std::unordered_set<std::string> skipped = {"build", "builds", "node_modules", "__pycache__", "third_party", "thirdparty", "3rdparty", "extern",
+        "external", "vendor", "_deps", "dist", "out", "venv", "CMakeFiles"};
+    return name.starts_with(".") || skipped.contains(name) || name.starts_with("build") || name.starts_with("cmake-build");
+}
+
+_cold void xstyle::scan_sources(xstyle::ProjectInfo& project)
+{
+    std::size_t c = 0;
+    std::size_t cpp = 0;
+    std::size_t walked = 0;
+    std::error_code error;
+
+    for (std::filesystem::recursive_directory_iterator it(project.root, std::filesystem::directory_options::skip_permission_denied, error), end;
+        it != end && !error && walked < MAX_PROJECT_FILES; it.increment(error), ++walked) {
+        if (it->is_directory(error)) {
+            if (xstyle::skipped_directory(it->path().filename().string())) it.disable_recursion_pending();
+            continue;
+        }
+        const std::string extension = xstyle::lower(it->path().extension().string());
+        if (extension == ".h") continue; // C or C++: what is decided here
+        const xstyle::Language language = xstyle::language_of(it->path());
+        if (language == xstyle::Language::C) ++c;
+        if (language == xstyle::Language::Cpp) ++cpp;
+    }
+    project.cProject = c > 0 && cpp == 0;
 }
 
 _cold xstyle::Language xstyle::language_of(const std::filesystem::path& path)

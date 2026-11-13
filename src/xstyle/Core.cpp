@@ -243,10 +243,8 @@ _cold void xstyle::Core::apply_(const std::string& id, const std::vector<std::st
 }
 
 /* files */
-_cold xstyle::Files xstyle::Core::collect_(void) const
+_cold xstyle::Files xstyle::Core::collect_(const xstyle::ProjectInfo& project) const
 {
-    static const std::unordered_set<std::string> skipped = {"build", "builds", "node_modules", "__pycache__", "third_party", "thirdparty", "3rdparty", "extern",
-        "external", "vendor", "_deps", "dist", "out", "venv", "CMakeFiles"};
     xstyle::Files files;
     std::error_code error;
     const std::filesystem::path cwd = std::filesystem::current_path();
@@ -296,7 +294,7 @@ _cold xstyle::Files xstyle::Core::collect_(void) const
         }
         for (std::filesystem::recursive_directory_iterator it(path, std::filesystem::directory_options::skip_permission_denied, error), end; it != end && !error; it.increment(error)) {
             const std::string name = it->path().filename().string();
-            if (it->is_directory() && (name.starts_with(".") || skipped.contains(name) || name.starts_with("build") || name.starts_with("cmake-build") || excluded(it->path()))) {
+            if (it->is_directory() && (xstyle::skipped_directory(name) || excluded(it->path()))) {
                 it.disable_recursion_pending();
                 continue;
             }
@@ -304,10 +302,10 @@ _cold xstyle::Files xstyle::Core::collect_(void) const
         }
     }
 
-    // A .h is C when the project has C sources and no C++ ones
+    // A .h is C when the project has C sources and no C++ ones (the whole project, else the files checked)
     const bool hasC = std::any_of(files.begin(), files.end(), [](const std::pair<std::filesystem::path, xstyle::Language>& f) {return f.second == xstyle::Language::C;});
     const bool hasCpp = std::any_of(files.begin(), files.end(), [](const std::pair<std::filesystem::path, xstyle::Language>& f) {return f.second == xstyle::Language::Cpp && f.first.extension() != ".h";});
-    if (hasC && !hasCpp)
+    if (project.cProject || (hasC && !hasCpp))
         for (std::pair<std::filesystem::path, xstyle::Language>& f: files)
             if (f.first.extension() == ".h") f.second = xstyle::Language::C;
     std::sort(files.begin(), files.end());
@@ -570,7 +568,8 @@ _cold void xstyle::Core::run(void)
             this->_options.changedLines[std::filesystem::weakly_canonical(path, error)] = ranges;
     }
     const std::set<std::filesystem::path> dirty = commit && !this->_options.commitAll ? xstyle::git::dirty_files(*repository) : std::set<std::filesystem::path>();
-    xstyle::Files files = this->collect_();
+    xstyle::scan_sources(project);
+    xstyle::Files files = this->collect_(project);
     if (!project.libutilsUsed) {
         static const std::regex include(R"(#\s*include\s*[<"](utils/)?utils\.hpp[>"])");
         for (const auto &[path, language]: files) {

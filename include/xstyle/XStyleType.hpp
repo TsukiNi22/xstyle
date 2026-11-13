@@ -142,6 +142,7 @@ struct ProjectInfo {
     bool isLibutils = false; // the project is libutils itself
     std::vector<xstyle::Migration> migrations; // parsed from the installed headers
     std::unordered_set<std::string> attributeMacros; // _hot, _cold... (installed headers or fallback)
+    bool cProject = false; // .c sources and no C++ ones in the whole project: its .h are C
 };
 
 struct Options {

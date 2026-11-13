@@ -22,6 +22,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Documentation site in the better-html-doc style ([tsukini22.github.io/xstyle/docs](https://tsukini22.github.io/xstyle/docs/)): user guide, concepts (severities and fix levels, fix loop, libutils rules), options and rules generated from `xstyle --help` / `--list-rules`, security, EN / FR with search; sources in `docs/site/` (`docs/scripts/update_rules.py` removed)
 
+### Fixed
+- A `.h` of a C project was checked as C++ when no `.c` was among the files checked (`xstyle include/`, `--staged` on a header only): the whole project is read (its git root, else the working directory) to decide whether its headers are C
+
 ## v1.0.0 - 2026-11-09
 ### Changed
 - **[MAJOR]** Own repository [TsukiNi22/xstyle](https://github.com/TsukiNi22/xstyle), moved out of `style/xstyle` of [ai-utils](https://github.com/TsukiNi22/ai-utils) with its history (no longer built by the `setup.sh` of ai-utils)

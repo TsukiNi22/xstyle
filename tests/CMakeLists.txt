@@ -81,6 +81,11 @@ if(XSTYLE_PACKAGE_BIN AND NOT CMAKE_CROSSCOMPILING)
         COMMAND sh -c "mkdir -p $(dirname $1) && printf 'x = 1  \\n\\tpass\\n' > $1 && $0 --rtk --r34 $1; exit 0" $<TARGET_FILE:xstyle> ${CLI_FILE}
     )
     set_tests_properties(Cli.ReportsIssues PROPERTIES PASS_REGULAR_EXPRESSION "G-TRAILING.*|G-TAB")
+    # A .h of a C project (outside of any git repository) is C even when checked alone
+    add_test(NAME Cli.HeaderOfCProject
+        COMMAND sh -c "d=$(mktemp -d) && mkdir -p $d/src $d/include && printf 'int f(void);\\n' > $d/src/f.c && printf 'typedef int f_t;\\n' > $d/include/f.h && cd $d && $0 --rtk --r34 -c TYPEDEF include; rm -rf $d; exit 0" $<TARGET_FILE:xstyle>
+    )
+    set_tests_properties(Cli.HeaderOfCProject PROPERTIES PASS_REGULAR_EXPRESSION "= 0 issues" FAIL_REGULAR_EXPRESSION "TYPEDEF ")
     add_test(NAME Cli.Version COMMAND $<TARGET_FILE:xstyle> --version)
     add_test(NAME Cli.ListRulesColumns COMMAND $<TARGET_FILE:xstyle> --list-rules --no-color)
     set_tests_properties(Cli.ListRulesColumns PROPERTIES PASS_REGULAR_EXPRESSION "cmake  +Indentation that is not a multiple of 4")

@@ -64,7 +64,7 @@ class Core {
         _cold void setup_(void);
         _cold _nodiscard std::vector<std::string> extractPaths_(const int argc, char* argv[]);
         _cold void apply_(const std::string& id, const std::vector<std::string>& values);
-        _cold _nodiscard xstyle::Files collect_(void) const;
+        _cold _nodiscard xstyle::Files collect_(const xstyle::ProjectInfo& project) const;
         _cold void listRules_(void) const;
         _cold void explain_(void) const;
         _cold void help_(const utils::arguments::ArgParser& parser) const;
