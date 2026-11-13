@@ -317,9 +317,10 @@ _cold xstyle::Files xstyle::Core::collect_(const xstyle::ProjectInfo& project) c
 _cold std::vector<xstyle::AppliedFix> xstyle::Core::header_(const xstyle::Checker& checker, xstyle::SourceFile& source)
 {
     // Missing file header: --header, else asked when there is a terminal (skipped otherwise)
-    if (!source.isCLike() || !checker.wants("CPP-HEADER")) return {};
+    const std::string code = source.getLanguage() == xstyle::Language::C ? "C-HEADER" : "CPP-HEADER";
+    if (!source.isCLike() || !checker.wants(code)) return {};
     const std::vector<xstyle::Issue> issues = checker.check(source);
-    if (std::none_of(issues.begin(), issues.end(), [](const xstyle::Issue& issue) {return issue.code == "CPP-HEADER";})) return {};
+    if (std::none_of(issues.begin(), issues.end(), [&code](const xstyle::Issue& issue) {return issue.code == code;})) return {};
 
     std::string banner;
     std::string description = this->_options.headerDescription;
@@ -358,7 +359,7 @@ _cold std::vector<xstyle::AppliedFix> xstyle::Core::header_(const xstyle::Checke
     std::vector<std::string> header = xstyle::make_header(source.getPath().filename().string(), banner, description);
     header.push_back("");
     source.apply({xstyle::Fix{xstyle::FixKind::Replace, 0, 0, header, false}});
-    return {xstyle::AppliedFix{"CPP-HEADER", 1, {}, header}};
+    return {xstyle::AppliedFix{code, 1, {}, header}};
 }
 
 /* git */

@@ -23,6 +23,9 @@ _hot xstyle::Issue xstyle::check::make_issue(const xstyle::SourceFile& file, con
     const std::string& message, const std::string& suggestion, const std::optional<xstyle::Fix>& fix)
 {
     xstyle::Issue issue;
+    // The layout rules shared with the C++ have their own C- code on a C file (CPP-GUARD-MISSING -> C-GUARD-MISSING)
+    const std::string twin = file.getLanguage() == xstyle::Language::C && code.starts_with("CPP-") ? "C-" + std::string(code.substr(4)) : "";
+    if (!twin.empty() && xstyle::find_rule(twin)) code = twin;
     const xstyle::Rule* rule = xstyle::find_rule(code);
 
     issue.file = file.getDisplay();

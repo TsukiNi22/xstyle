@@ -254,7 +254,7 @@ _hot void xstyle::check::comments(const xstyle::SourceFile& file, xstyle::check:
             const std::size_t width = static_cast<std::size_t>(block[k].length(1));
             if (!block[k][3].matched) {
                 issues.push_back(xstyle::check::make_issue(file, i + k, static_cast<std::size_t>(block[k].length(1)), "CPP-INCLUDE-COMMENT", "Include without trailing comment",
-                    xstyle::trim(lines[i + k]) + " // what is used (std::x, utils::y...)"));
+                    xstyle::trim(lines[i + k]) + (file.getLanguage() == xstyle::Language::C ? " // what is used (malloc, size_t...)" : " // what is used (std::x, utils::y...)")));
                 continue;
             }
             columns.insert(static_cast<std::size_t>(block[k].position(3)));

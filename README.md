@@ -256,7 +256,7 @@ The `LU-*` rules are enabled when libutils is **installed** (`/usr/include`, `/u
 | Language | Files | Rules |
 |---|---|---|
 | C++ | `.cpp .cc .cxx .hpp .hh .hxx .ipp .tpp .inl .h` | generic + `CPP-*` + `LU-*` (libutils installed and used) |
-| C | `.c` (+ `.h` without C++ in the project) | generic + the `CPP-*` rules marked `c` |
+| C | `.c` (+ `.h` of a project without C++ sources) | generic + `C-*` (the layout rules shared with the C++ under their own `C-` code, then the C rules) |
 | Rust | `.rs` | generic + `RS-*` (tests: `#[cfg(test)]` module, `tests/`, `benches/`, `examples/` excepted for unwrap / panic) |
 | Python | `.py` | generic + `PY-*` |
 | Shell | `.sh .bash` | generic + `SH-*` |

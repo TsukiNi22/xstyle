@@ -59,6 +59,19 @@ TEST(Rules, RuleAppliesToItsLanguages)
     EXPECT_FALSE(xstyle::rule_applies(*cpp, xstyle::Language::Python));
 }
 
+TEST(Rules, CAndCppCodesAreSeparate)
+{
+    // A C file never gets a CPP- code: the rules shared with the C++ have their own C- twin
+    for (const xstyle::Rule& rule: xstyle::rules()) {
+        if (rule.code.starts_with("CPP-")) EXPECT_FALSE(xstyle::rule_applies(rule, xstyle::Language::C)) << rule.code;
+        if (rule.code.starts_with("C-")) EXPECT_FALSE(xstyle::rule_applies(rule, xstyle::Language::Cpp)) << rule.code;
+        if (rule.code.starts_with("C-")) EXPECT_TRUE(xstyle::rule_applies(rule, xstyle::Language::C)) << rule.code;
+    }
+    EXPECT_NE(xstyle::find_rule("C-GUARD-MISSING"), nullptr);
+    EXPECT_FALSE(xstyle::match_code("CPP-PTR-REF", "C")); // -c C selects the C rules only
+    EXPECT_TRUE(xstyle::match_code("C-PTR-REF", "C"));
+}
+
 /* Patterns */
 TEST(Rules, MatchCode)
 {
