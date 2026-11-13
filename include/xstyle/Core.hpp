@@ -33,7 +33,7 @@ File Description:
     //----------------------------------------------------------------//
     /* DEFINE */
 
-    #define XSTYLE_VERSION "1.0.0" // Version of xstyle
+    #define XSTYLE_VERSION "1.1.0" // Version of xstyle
     #define MAX_FILE_SIZE (2 * 1024 * 1024) // Bigger files are skipped (generated / minified)
 
 namespace xstyle { // namespace start

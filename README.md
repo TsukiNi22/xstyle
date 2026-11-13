@@ -1,7 +1,7 @@
 # xstyle
 
 > [!TIP]
-> Documentation [TsukiNi22/xstyle](https://tsukini22.github.io/xstyle/docs/) (v1.0.0): user guide, concepts, every option and rule (searchable, EN / FR) and the interactive project graph.
+> Documentation [TsukiNi22/xstyle](https://tsukini22.github.io/xstyle/docs/) (v1.1.0): user guide, concepts, every option and rule (searchable, EN / FR) and the interactive project graph.
 
 Checker and fixer of my coding style, C++ first (`cpp-style`, `cpp-comments`, `cpp-class` layout, libutils
 usage), then C, assembly (NASM x86-64), Python, shell, Rust and the generic rules of every language. Each issue is printed with its file, line
