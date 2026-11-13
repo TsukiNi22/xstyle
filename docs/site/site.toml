@@ -12,7 +12,7 @@ logo = "../logo.svg"
 
 [home]
 title = { en = "xstyle documentation", fr = "Documentation de xstyle" }
-tagline = { en = "Checker and fixer of the coding style of TsukiNi22: C++20 and libutils first, then Python, shell, Rust, CMake and the generic rules of every language.", fr = "Vérificateur et correcteur du style de code de TsukiNi22 : C++20 et libutils d'abord, puis Python, shell, Rust, CMake et les règles génériques de tous les langages." }
+tagline = { en = "Checker and fixer of the coding style of TsukiNi22: C++20 and libutils first, then C, assembly (NASM), Python, shell, Rust, CMake and the generic rules of every language.", fr = "Vérificateur et correcteur du style de code de TsukiNi22 : C++20 et libutils d'abord, puis C, assembleur (NASM), Python, shell, Rust, CMake et les règles génériques de tous les langages." }
 changelog = "../../CHANGELOG.md"
 links = [
     { href = "getting-started.html", text = { en = "Getting started", fr = "Premiers pas" } },

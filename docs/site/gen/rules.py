@@ -24,7 +24,9 @@ except ImportError as e:
 FAMILIES = {
     "R34": ("mandatory", "Mandatory", "Obligatoire"),
     "G": ("generic", "Generic (every language)", "Génériques (tous les langages)"),
-    "CPP": ("cpp", "C++ / C", "C++ / C"),
+    "CPP": ("cpp", "C++", "C++"),
+    "C": ("c", "C", "C"),
+    "ASM": ("asm", "Assembly (NASM x86-64)", "Assembleur (NASM x86-64)"),
     "CMAKE": ("cmake", "CMake", "CMake"),
     "LU": ("libutils", "libutils", "libutils"),
     "PY": ("python", "Python", "Python"),
