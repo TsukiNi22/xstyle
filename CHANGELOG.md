@@ -23,6 +23,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Documentation site in the better-html-doc style ([tsukini22.github.io/xstyle/docs](https://tsukini22.github.io/xstyle/docs/)): user guide, concepts (severities and fix levels, fix loop, libutils rules), options and rules generated from `xstyle --help` / `--list-rules`, security, EN / FR with search; sources in `docs/site/` (`docs/scripts/update_rules.py` removed)
 - **[MAJOR]** C files no longer get `CPP-*` codes: the layout rules shared with the C++ have their own `C-` code on a C file (`C-GUARD-MISSING`, `C-PTR-REF`, `C-HEADER`... `-c C` / `-i C` select them, `xstyle: ignore C-...`), the `CPP-*` rules are C++ only
 
+### Added
+- C rules (`check/c.cpp`): `C-TYPE-NAME` (struct / union / enum `snake_case` with `_s` / `_u` / `_e`, typedef `_t`, enum values `UPPER_SNAKE`), `C-FUNC-NAME` (functions, parameters, variables in `snake_case`), `C-PTR-CHECK` (pointer parameter of a non static function dereferenced before being tested), `C-FUNC-LENGTH` (body over 40 lines of code), `C-NESTING` (more than 4 nested control blocks, a bare `{ }` not counted)
+
 ### Fixed
 - A `.h` of a C project was checked as C++ when no `.c` was among the files checked (`xstyle include/`, `--staged` on a header only): the whole project is read (its git root, else the working directory) to decide whether its headers are C
 

@@ -29,6 +29,8 @@ File Description:
     /* DEFINE */
 
     #define PREVIEW_LINES 6 // Lines of a fix shown in the report
+    #define C_MAX_FUNCTION_LINES 40 // Lines of code of a C function body (C-FUNC-LENGTH)
+    #define C_MAX_NESTING 4 // Control blocks nested in a C function (C-NESTING)
 
 namespace xstyle::check { // namespace start
 //----------------------------------------------------------------//
@@ -50,6 +52,7 @@ struct TypeGuess {
 /* checks */
 _hot void generic(const xstyle::SourceFile& file, xstyle::check::Issues& issues);
 _hot void cpp(const xstyle::SourceFile& file, const xstyle::ProjectInfo& project, xstyle::check::Issues& issues);
+_hot void c(const xstyle::SourceFile& file, xstyle::check::Issues& issues); // the C only rules (names, pointer checks, length, nesting)
 _hot void libutils(const xstyle::SourceFile& file, const xstyle::ProjectInfo& project, xstyle::check::Issues& issues);
 _hot void python(const xstyle::SourceFile& file, xstyle::check::Issues& issues);
 _hot void shell(const xstyle::SourceFile& file, xstyle::check::Issues& issues);

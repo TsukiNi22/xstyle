@@ -86,6 +86,11 @@ if(XSTYLE_PACKAGE_BIN AND NOT CMAKE_CROSSCOMPILING)
         COMMAND sh -c "d=$(mktemp -d) && mkdir -p $d/src $d/include && printf 'int f(void);\\n' > $d/src/f.c && printf 'typedef int f_t;\\n' > $d/include/f.h && cd $d && $0 --rtk --r34 -c TYPEDEF include; rm -rf $d; exit 0" $<TARGET_FILE:xstyle>
     )
     set_tests_properties(Cli.HeaderOfCProject PROPERTIES PASS_REGULAR_EXPRESSION "= 0 issues" FAIL_REGULAR_EXPRESSION "TYPEDEF ")
+    # The C only rules: names, pointer dereferenced before its check
+    add_test(NAME Cli.CRules
+        COMMAND sh -c "d=$(mktemp -d) && printf 'typedef struct Node {\\n    int v;\\n} Node;\\n\\nint getValue(Node* node)\\n{\\n    return node->v;\\n}\\n' > $d/f.c && $0 --rtk --r34 -c C-TYPE-NAME,C-FUNC-NAME,C-PTR-CHECK $d/f.c; rm -rf $d; exit 0" $<TARGET_FILE:xstyle>
+    )
+    set_tests_properties(Cli.CRules PROPERTIES PASS_REGULAR_EXPRESSION "= 4 issues")
     add_test(NAME Cli.Version COMMAND $<TARGET_FILE:xstyle> --version)
     add_test(NAME Cli.ListRulesColumns COMMAND $<TARGET_FILE:xstyle> --list-rules --no-color)
     set_tests_properties(Cli.ListRulesColumns PROPERTIES PASS_REGULAR_EXPRESSION "cmake  +Indentation that is not a multiple of 4")

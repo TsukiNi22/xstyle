@@ -116,6 +116,7 @@ set(SRC_SHARED
     # Core (sub-part: checks)
     src/xstyle/check/generic.cpp
     src/xstyle/check/cpp.cpp
+    src/xstyle/check/c.cpp
     src/xstyle/check/libutils.cpp
     src/xstyle/check/script.cpp
     src/xstyle/check/typing.cpp

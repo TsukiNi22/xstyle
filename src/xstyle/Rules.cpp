@@ -103,6 +103,11 @@ _cold const std::vector<xstyle::Rule>& xstyle::rules(void)
         {"C-COMMENT-ALIGN",    xstyle::Severity::Negligible,   xstyle::FixMode::Auto,   "c",            "Trailing comments of an include block not aligned on one column"},
         {"C-EMPTY-SECTION",    xstyle::Severity::Minor,        xstyle::FixMode::Auto,   "c",            "Section separator with nothing linked to it"},
         {"C-ORPHAN-GROUP",     xstyle::Severity::Negligible,   xstyle::FixMode::Auto,   "c",            "/* group */ label with nothing under it"},
+        {"C-TYPE-NAME",        xstyle::Severity::Major,        xstyle::FixMode::Manual, "c",            "struct / union / enum not in snake_case ending with _s / _u / _e, typedef not ending with _t, enum value not in UPPER_SNAKE"},
+        {"C-FUNC-NAME",        xstyle::Severity::Minor,        xstyle::FixMode::Manual, "c",            "Function, parameter or variable not in snake_case (global const: UPPER_SNAKE allowed)"},
+        {"C-PTR-CHECK",        xstyle::Severity::Minor,        xstyle::FixMode::Manual, "c",            "Pointer parameter of a non static function dereferenced (p->, p[, *p) before being checked (if (!ptr) return KO;)"},
+        {"C-FUNC-LENGTH",      xstyle::Severity::Minor,        xstyle::FixMode::Manual, "c",            "Function body longer than 40 lines of code (empty and comment lines not counted)"},
+        {"C-NESTING",          xstyle::Severity::Minor,        xstyle::FixMode::Manual, "c",            "Control blocks (if / for / while / switch / do / else) nested more than 4 levels deep (a bare { } is not a level)"},
 
         // CMake (cmake-style)
         {"CMAKE-SECTION-ORDER", xstyle::Severity::Minor,      xstyle::FixMode::Manual, "cmake",        "Sections not in the cmake-style order"},
