@@ -463,7 +463,7 @@ xstyle --fix --staged                 # fix what can be, then git add -u
 > `Build (CI)` only runs when `Dispatch (CI/CD)` decides **not** to build the packages, to check that the code still compiles.
 
 > [!IMPORTANT]
-> The workflows need the repository variable `RUNNER` (`gh variable set RUNNER --body <runner>`), the containers `ghcr.io/tsukini22/ci`, `unit-tests`, `package`, `git`, and the secrets `GPG_PRIVATE_KEY` (base64), `GPG_KEY_ID`, `GPG_PASSPHRASE` to sign and publish the packages.
+> The workflows need the repository variable `RUNNER` (`gh variable set RUNNER --body <runner>`), the containers `ghcr.io/tsukini22/ci`, `unit-tests`, `package`, `git`, the secrets `GPG_PRIVATE_KEY` (base64), `GPG_KEY_ID`, `GPG_PASSPHRASE` to sign and publish the packages, and `DOCKER_IMAGE_REPO_TOKEN` (fine-grained token shared by libutils, brain and xstyle: `Contents` read and write on `docker-image`) to notify docker-image.
 
 > [!TIP]
 > A commit containing `[ignore]` skips the whole CI.
@@ -480,4 +480,6 @@ The pre-release of the packages (`<package_name>-pre`) is triggered by:
 The release of the packages (channel `stable`) and the GitHub release are only triggered by a tag matching exactly `vx.x.x` (ex: `v1.0.0`), whose section must exist in the `CHANGELOG.md`.
 
 ### Downstream notification
-`Dispatch (CI/CD)` has a commented `notify-downstream` job (`repository_dispatch` to another repository, like libutils -> docker-image), triggered after a package publication or by a commit containing `[release]`.
+`Dispatch (CI/CD)` notifies the `docker-image` repository (`repository_dispatch` `xstyle-released`, job `notify-docker-image`) after the packages are published, to rebuild the `ci` and `mingw64-ci` images (and their `unit-tests` images) with the new packages:
+- on every package build (release or pre-release)
+- or on a commit containing `[release]`
