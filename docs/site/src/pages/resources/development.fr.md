@@ -59,4 +59,4 @@ Les pages sont écrites dans `docs/` et publiées sur `gh-pages` par `Docs - Pag
 | `Release - GitHub (CD)` | la release GitHub d'un tag, depuis sa section du `CHANGELOG.md` |
 | `Docs - Pages (CD)` | copie `docs/` sur `gh-pages` |
 
-Un tag `vX.Y.Z` (sa section `## vX.Y.Z - date` doit exister dans le changelog) construit les paquets stables et la release ; un tag `vX.Y.Z-<suffixe>` ou un commit avec `[build]` les paquets `-pre` ; `[ignore]` saute la CI.
+Un tag `vX.Y.Z` (sa section `## vX.Y.Z - date` doit exister dans le changelog) construit les paquets stables et la release ; un tag `vX.Y.Z-<suffixe>` ou un commit avec `[build]` les paquets `-pre` ; `[ignore]` saute la CI. Après une publication de paquets (ou un commit avec `[release]`), `Dispatch (CI/CD)` prévient `docker-image` (`xstyle-released`) pour reconstruire les images `ci` et `mingw64-ci` avec le nouveau xstyle.
