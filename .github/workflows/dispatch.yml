@@ -133,28 +133,26 @@ jobs:
           wait_interval: 4
           propagate_failure: true
 
-  # Example of a downstream notification (like libutils -> docker-image): after a package publication, or a
-  # commit containing [release]. The receiving repository listens with 'on: repository_dispatch: types: [<event>]',
-  # the token (secret) needs the 'repo' scope on it. Uncomment and set the repository / event to use it.
-  #notify-downstream:
-  #  needs: [dispatch, notify-build-packages]
-  #  if: always() && needs.dispatch.outputs.ignore == 'false' && (needs.dispatch.outputs.build == 'true' || needs.dispatch.outputs.release == 'true') && (needs.notify-build-packages.result == 'success' || needs.notify-build-packages.result == 'skipped')
-  #
-  #  runs-on: ${{ vars.RUNNER }}
-  #  defaults:
-  #    run:
-  #      shell: bash
-  #
-  #  steps:
-  #    - name: Trigger <downstream repository> (repository_dispatch)
-  #      run: |
-  #        curl -sf -X POST \
-  #          -H "Authorization: Bearer ${{ secrets.DOWNSTREAM_REPO_TOKEN }}" \
-  #          -H "Accept: application/vnd.github+json" \
-  #          "https://api.github.com/repos/TsukiNi22/<downstream repository>/dispatches" \
-  #          -d '{
-  #            "event_type": "xstyle-released",
-  #            "client_payload": {
-  #              "ref": "${{ github.ref_name }}"
-  #            }
-  #          }'
+  notify-docker-image:
+    # Rebuild of the docker-image images (ci, mingw64-ci) that install the xstyle packages from my-universe
+    needs: [dispatch, notify-build-packages]
+    if: always() && needs.dispatch.outputs.ignore == 'false' && (needs.dispatch.outputs.build == 'true' || needs.dispatch.outputs.release == 'true') && (needs.notify-build-packages.result == 'success' || needs.notify-build-packages.result == 'skipped')
+
+    runs-on: ${{ vars.RUNNER }}
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Trigger docker-image (repository_dispatch)
+        run: |
+          curl -sf -X POST \
+            -H "Authorization: Bearer ${{ secrets.DOCKER_IMAGE_REPO_TOKEN }}" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/TsukiNi22/docker-image/dispatches" \
+            -d '{
+              "event_type": "xstyle-released",
+              "client_payload": {
+                "ref": "${{ github.ref_name }}"
+              }
+            }'
