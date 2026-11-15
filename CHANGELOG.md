@@ -18,14 +18,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [pre-release]
+## [pre-release] (empty)
+
+## v1.2.0 - 2026-11-15
 ### Changed
 - Documentation site: the suppression page becomes "Ignoring rules and files" (comments, `.xignore`, `.xconfig`, flags, `--add-ignore`), the options page has an Ignore group, the FAQ points to `.xconfig`
 - **[MAJOR]** The files ignored by git are skipped (`git ls-files --others --ignored --exclude-standard`), unless given as argument; `--no-gitignore` (or `gitignore = false` in `.xconfig`) checks them
 - `-i` of the command line and `ignore` of `.xconfig` add up
-- README rules table, documentation site (rules page: C++, C and assembly families; languages page: C headers, ignored results, assembly) regenerated with the C and assembly rules
-- Documentation site in the better-html-doc style ([tsukini22.github.io/xstyle/docs](https://tsukini22.github.io/xstyle/docs/)): user guide, concepts (severities and fix levels, fix loop, libutils rules), options and rules generated from `xstyle --help` / `--list-rules`, security, EN / FR with search; sources in `docs/site/` (`docs/scripts/update_rules.py` removed)
-- **[MAJOR]** C files no longer get `CPP-*` codes: the layout rules shared with the C++ have their own `C-` code on a C file (`C-GUARD-MISSING`, `C-PTR-REF`, `C-HEADER`... `-c C` / `-i C` select them, `xstyle: ignore C-...`), the `CPP-*` rules are C++ only
+- Version 1.1.0 and 1.2.0 are stable releases (tags `v1.1.0` / `v1.2.0`): the `v1.1.0-pre` / `v1.2.0-pre` tags only published `-pre` packages
 
 ### Added
 - Suppression comments: `xstyle: off [CODES]` ... `xstyle: on [CODES]` (a region of lines, up to the end of the file without `on`), `xstyle: ignore-next N [CODES]` (the next `N` lines), `xstyle: skip-file` (the file is not checked nor counted)
@@ -37,12 +37,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `.xignore` of the repository: the generated `docs/search-index.*`
 - `--add-ignore`: writes `xstyle: ignore CODE,...` on the line of every issue left (after `-c` / `-s` / `-m`, `-n` previews) to adopt xstyle on old code; never in a string / here-document / continuation, a comment that would silence nothing is taken back
 - `G-UNUSED-IGNORE` (minor, auto fix): a suppression comment that silences nothing (compared to every issue of the file, before `-c` / `-s` / `--diff`); `--fix` removes the comment (an `off` region loses its `on` too)
+- Workflow: `Dispatch (CI/CD)` notifies [docker-image](https://github.com/TsukiNi22/docker-image) (`xstyle-released` repository dispatch) after a package publication or a `[release]` commit (secret `DOCKER_IMAGE_REPO_TOKEN`)
+
+### Fixed
+- A suppression comment of a Markdown file only counts inside a `<!-- -->` comment (an example in a code block or in the text silenced the file); `xstyle: ignore-something` is no longer read as `xstyle: ignore`; the `*` of the `*/` closing `/* xstyle: ignore X */` was read as the pattern of every rule
+
+## v1.1.0 - 2026-11-13
+### Changed
+- README rules table, documentation site (rules page: C++, C and assembly families; languages page: C headers, ignored results, assembly) regenerated with the C and assembly rules
+- Documentation site in the better-html-doc style ([tsukini22.github.io/xstyle/docs](https://tsukini22.github.io/xstyle/docs/)): user guide, concepts (severities and fix levels, fix loop, libutils rules), options and rules generated from `xstyle --help` / `--list-rules`, security, EN / FR with search; sources in `docs/site/` (`docs/scripts/update_rules.py` removed)
+- **[MAJOR]** C files no longer get `CPP-*` codes: the layout rules shared with the C++ have their own `C-` code on a C file (`C-GUARD-MISSING`, `C-PTR-REF`, `C-HEADER`... `-c C` / `-i C` select them, `xstyle: ignore C-...`), the `CPP-*` rules are C++ only
+
+### Added
 - C rules (`check/c.cpp`): `C-TYPE-NAME` (struct / union / enum `snake_case` with `_s` / `_u` / `_e`, typedef `_t`, enum values `UPPER_SNAKE`), `C-FUNC-NAME` (functions, parameters, variables in `snake_case`), `C-PTR-CHECK` (pointer parameter of a non static function dereferenced before being tested), `C-FUNC-LENGTH` (body over 40 lines of code), `C-NESTING` (more than 4 nested control blocks, a bare `{ }` not counted)
 - `CPP-UNCHECKED-RETURN` / `C-UNCHECKED-RETURN`: the result of a function returning a value ignored (`f(x);` alone in its statement): the free functions declared in the project (its sources are read once per run) and a libc / POSIX list (`malloc`, `read`, `write`, `fork`, `pthread_create`...); `(void)f(x);` ignores it on purpose
 - Assembly language (NASM x86-64: `.asm`, `.nasm`, `.s`, `.S`; a GAS file only gets its header and the generic rules), `-l asm`: `ASM-HEADER` / `ASM-HEADER-FILE` (the C / C++ header in `;` comments), `ASM-SECTION-ORDER`, `ASM-SYMBOL-DECL` (extern at the top, global right after `section .text`, unused / undefined symbols), `ASM-INDENT` (local blocks up to their last backward jump), `ASM-COMMENT-ALIGN`, `ASM-CASE`, `ASM-LABEL-NAME` (snake_case, static functions `_name`, global ones never), `ASM-LOCAL-LABEL`, `ASM-CONST-NAME`, `ASM-DATA-NAME`, `ASM-REG-COMMENT` (`; in: rdi, rsi | out: rax` written with `--force`), `ASM-FALLTHROUGH`, `ASM-CALLEE-SAVED` (System V), `ASM-FRAME` / `ASM-FRAME-UNUSED` (push rbp / pop rbp on every path, a frame not needed), `ASM-SYSCALL-COMMENT` (the syscall name written by `--fix`), `ASM-ZERO-XOR`
 
 ### Fixed
-- A suppression comment of a Markdown file only counts inside a `<!-- -->` comment (an example in a code block or in the text silenced the file); `xstyle: ignore-something` is no longer read as `xstyle: ignore`; the `*` of the `*/` closing `/* xstyle: ignore X */` was read as the pattern of every rule
 - A `.h` of a C project was checked as C++ when no `.c` was among the files checked (`xstyle include/`, `--staged` on a header only): the whole project is read (its git root, else the working directory) to decide whether its headers are C
 
 ## v1.0.0 - 2026-11-09

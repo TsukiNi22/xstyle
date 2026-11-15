@@ -561,6 +561,7 @@ The pre-release of the packages (`<package_name>-pre`) is triggered by:
 
 ### Release (stable)
 The release of the packages (channel `stable`) and the GitHub release are only triggered by a tag matching exactly `vx.x.x` (ex: `v1.0.0`), whose section must exist in the `CHANGELOG.md`.
+A pre-release tag also gets a GitHub release (marked pre-release), with its own `## [vx.x.x-pre]` section or the `## [pre-release]` one.
 
 ### Downstream notification
 `Dispatch (CI/CD)` notifies the `docker-image` repository (`repository_dispatch` `xstyle-released`, job `notify-docker-image`) after the packages are published, to rebuild the `ci` and `mingw64-ci` images (and their `unit-tests` images) with the new packages:

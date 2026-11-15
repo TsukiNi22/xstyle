@@ -34,14 +34,18 @@ jobs:
       - name: Release notes (section of the tag in CHANGELOG.md)
         run: |
           set -euo pipefail
-          # CHANGELOG sections: '## vX.Y.Z - YYYY-MM-DD' (stable) / '## [vX.Y.Z-pre] - YYYY-MM-DD' (pre-release)
+          # CHANGELOG sections: '## vX.Y.Z - YYYY-MM-DD' (stable) / '## [vX.Y.Z-pre] - YYYY-MM-DD' or '## [pre-release]' (pre-release)
           awk -v tag="$GITHUB_REF_NAME" '
             BEGIN {gsub(/\./, "\\.", tag)}
             $0 ~ "^## \\[?" tag "\\]?( |$)" {found = 1; next}
             found && /^## / {exit}
             found {print}
           ' CHANGELOG.md > notes.md
-          if [ ! -s notes.md ]; then
+          # A pre-release tag (vX.Y.Z-<suffix>) without its own section: the [pre-release] section
+          if [ ! -s notes.md ] && [[ "$GITHUB_REF_NAME" == *-* ]]; then
+            awk '/^## \[pre-release\]/ {found = 1; next} found && /^## / {exit} found {print}' CHANGELOG.md > notes.md
+          fi
+          if [ ! -s notes.md ] || ! grep -q '[^[:space:]]' notes.md; then
             echo "::error title=Release notes,file=CHANGELOG.md::no section '## $GITHUB_REF_NAME - <date>' in CHANGELOG.md"
             exit 1
           fi
