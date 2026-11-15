@@ -14,25 +14,33 @@ File Description:
 #include <utils/utils.hpp>
 #include "xstyle/check/Checks.hpp"
 #include "xstyle/Checker.hpp"
+#include "xstyle/Ignore.hpp"
 #include "xstyle/Rules.hpp"
 #include "xstyle/Tools.hpp"
 #include <unordered_map>
+#include <functional>
 #include <algorithm>
 #include <optional>
 #include <cctype>
 #include <regex>
 
 /* selection */
-_hot bool xstyle::Checker::selected_(std::string_view code, const bool fix) const
+_hot bool xstyle::Checker::chosen_(std::string_view code, const bool fix) const
 {
+    // -c / --fix CODES (without -i)
     const std::vector<std::string>& codes = fix && !this->_options.fixCodes.empty() ? this->_options.fixCodes : this->_options.codes;
 
-    for (const std::string& pattern: this->_options.ignored)
-        if (xstyle::match_code(code, pattern)) return false;
     if (fix && !this->_options.fixCodes.empty() && !this->_options.codes.empty()
         && std::none_of(this->_options.codes.begin(), this->_options.codes.end(), [&](const std::string& p) {return xstyle::match_code(code, p);})) return false;
     if (codes.empty()) return true;
     return std::any_of(codes.begin(), codes.end(), [&](const std::string& p) {return xstyle::match_code(code, p);});
+}
+
+_hot bool xstyle::Checker::selected_(std::string_view code, const bool fix) const
+{
+    for (const std::string& pattern: this->_options.ignored)
+        if (xstyle::match_code(code, pattern)) return false;
+    return this->chosen_(code, fix);
 }
 
 _hot bool xstyle::Checker::suppressed_(const std::vector<xstyle::Directive>& directives, const xstyle::Issue& issue) const
@@ -167,7 +175,7 @@ _hot bool xstyle::Checker::skipped(const xstyle::SourceFile& file) const
     return std::any_of(found.begin(), found.end(), [](const xstyle::Directive& d) {return d.kind == xstyle::DirectiveKind::SkipFile;});
 }
 
-_hot std::vector<xstyle::Issue> xstyle::Checker::run_(const xstyle::SourceFile& file, const bool fix) const
+_hot std::vector<xstyle::Issue> xstyle::Checker::run_(const xstyle::SourceFile& file, const bool fix, std::vector<xstyle::Issue>* ignored) const
 {
     xstyle::check::Issues issues;
     const xstyle::Language language = file.getLanguage();
@@ -190,15 +198,25 @@ _hot std::vector<xstyle::Issue> xstyle::Checker::run_(const xstyle::SourceFile& 
         if (language == xstyle::Language::CMake) xstyle::check::cmake(file, issues);
     }
 
-    // Selection: language of the rule, codes, severity, suppression comments (and the ones that silence nothing)
+    // Selection: language of the rule, codes, severity, changed lines; then what is ignored (counted): comments (and the ones that silence
+    // nothing), rules ignored by path (.xignore, [[path]] of .xconfig, --ignore-path), rules ignored (-i)
     const std::vector<xstyle::Directive> directives = this->_options.inlineIgnores ? xstyle::Checker::directives(file) : std::vector<xstyle::Directive>();
+    const std::vector<std::string> pathCodes = this->_ignore ? this->_ignore->codes(file.getPath()) : std::vector<std::string>();
     if (!templateFile) this->unused_(file, directives, issues);
-    std::erase_if(issues, [&](const xstyle::Issue& issue) {
+    std::erase_if(issues, [&](xstyle::Issue& issue) {
         const xstyle::Rule* rule = xstyle::find_rule(issue.code);
-        return !rule || !xstyle::rule_applies(*rule, language) || !this->selected_(issue.code, fix) || issue.severity < this->_options.minSeverity
+        if (!rule || !xstyle::rule_applies(*rule, language) || !this->chosen_(issue.code, fix) || issue.severity < this->_options.minSeverity
             || (!this->_options.modes.empty() && std::find(this->_options.modes.begin(), this->_options.modes.end(), issue.mode) == this->_options.modes.end())
-            || !this->changed_(file, issue.line)
-            || this->suppressed_(directives, issue);
+            || !this->changed_(file, issue.line)) return true;
+        const std::function<bool(const std::vector<std::string>&)> any = [&](const std::vector<std::string>& patterns) {
+            return std::any_of(patterns.begin(), patterns.end(), [&](const std::string& p) {return xstyle::match_code(issue.code, p);});
+        };
+        if (this->suppressed_(directives, issue)) issue.ignoredBy = "comment";
+        else if (any(pathCodes)) issue.ignoredBy = "path";
+        else if (any(this->_options.ignored)) issue.ignoredBy = "rule";
+        else return false;
+        if (ignored) ignored->push_back(issue);
+        return true;
     });
     std::stable_sort(issues.begin(), issues.end(), [](const xstyle::Issue& a, const xstyle::Issue& b) {return a.line != b.line ? a.line < b.line : a.column < b.column;});
     return issues;
@@ -252,8 +270,8 @@ _hot std::vector<xstyle::AppliedFix> xstyle::Checker::fix(xstyle::SourceFile& fi
 }
 
 /* constructor */
-xstyle::Checker::Checker(const xstyle::Options& options, const xstyle::ProjectInfo& project)
-: _options(options), _project(project)
+xstyle::Checker::Checker(const xstyle::Options& options, const xstyle::ProjectInfo& project, const xstyle::Ignore* ignore)
+: _options(options), _project(project), _ignore(ignore)
 {
     if (this->_options.libutils == "on") this->_libutils = true;
     else if (this->_options.libutils == "off") this->_libutils = false;

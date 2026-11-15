@@ -42,7 +42,7 @@ _cold void xstyle::Core::completion_(void) const
     // What each flag takes (the flags without entry take nothing)
     static const std::unordered_map<std::string, std::string> kinds = {
         {"code", "codes"}, {"ignore", "codes"}, {"explain", "codes"}, {"fix", "fix"}, {"severity", "level"}, {"fail", "level"}, {"lang", "lang"}, {"mode", "modes"},
-        {"libutils", "auto on off"}, {"format", "text md json"}, {"link", "file vscode none"}, {"completion", "bash zsh fish"}, {"report", "file"}, {"exclude", "path"},
+        {"libutils", "auto on off"}, {"format", "text md json"}, {"link", "file vscode none"}, {"completion", "bash zsh fish"}, {"report", "file"}, {"exclude", "path"}, {"excludefrom", "file"},
         {"header", "none default"},
     };
     const std::string levels = "unforgivable major minor negligible";

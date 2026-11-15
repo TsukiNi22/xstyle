@@ -20,6 +20,8 @@ File Description:
 #include "xstyle/Reporter.hpp"
 #include "xstyle/Checker.hpp"
 #include "xstyle/Project.hpp"
+#include "xstyle/Config.hpp"
+#include "xstyle/Ignore.hpp"
 #include "xstyle/Header.hpp"
 #include "xstyle/Rules.hpp"
 #include "xstyle/Tools.hpp"
@@ -49,6 +51,18 @@ _cold static std::optional<std::string> codes_hook_(const std::string& value)
     return std::nullopt;
 }
 
+_cold static std::optional<std::string> ignore_path_hook_(const std::string& value)
+{
+    // GLOB[:CODES];GLOB[:CODES]...
+    for (const std::string& entry: xstyle::split(value, ';')) {
+        const std::size_t colon = entry.rfind(':');
+        if (colon == std::string::npos) continue;
+        if (const std::optional<std::string> error = codes_hook_(entry.substr(colon + 1))) return "'" + entry + "': " + *error;
+    }
+    if (xstyle::split(value, ';').empty()) return "no path given";
+    return std::nullopt;
+}
+
 _cold static std::optional<std::string> choice_hook_(const std::string& value, const std::vector<std::string>& choices)
 {
     if (std::find(choices.begin(), choices.end(), xstyle::lower(value)) != choices.end()) return std::nullopt;
@@ -56,6 +70,11 @@ _cold static std::optional<std::string> choice_hook_(const std::string& value, c
     for (const std::string& choice: choices)
         list += (list.empty() ? "" : " | ") + choice;
     return "'" + value + "' is not one of: " + list;
+}
+
+_cold static void append_(std::vector<std::string>& to, const std::vector<std::string>& values)
+{
+    to.insert(to.end(), values.begin(), values.end());
 }
 
 _cold static std::filesystem::path libutils_skill_(void)
@@ -101,6 +120,13 @@ _cold void xstyle::Core::setup_(void)
     this->_parser.setFlag("fail", {"F", "", "fail-on", ""}, {{"level", true, severity}}, "Exit 1 only if an issue of this severity or above is left (default: negligible)");
     this->_parser.setFlag("exclude", {"e", "", "exclude", "XSTYLE_EXCLUDE"}, {{"patterns", true, utils::arguments::defaultTrueParsingHook}},
         "Skip the paths matching these patterns, comma separated (folder name, path prefix or glob: build,third_party,*.gen.hpp)");
+    this->_parser.setFlag("excludefrom", {"", "", "exclude-from", ""}, {{"file", true, utils::arguments::defaultTrueParsingHook}},
+        "Skip the paths matching the patterns of this file (one per line, # comments; same format as --exclude)");
+    this->_parser.setFlag("ignorepath", {"", "", "ignore-path", "XSTYLE_IGNORE_PATH"}, {{"rules", true, ignore_path_hook_}},
+        "Ignore rules on some paths only, ; separated: GLOB[:CODES] (tests/**:CPP-AUTO,G-TODO;examples/*; no codes: every rule)");
+    this->_parser.setFlag("gitignore", {"", "", "no-gitignore", ""}, {}, "Also check the files ignored by git (skipped by default, unless given as argument)");
+    this->_parser.setFlag("inlineignore", {"", "", "no-inline-ignore", ""}, {},
+        "Audit: no suppression comment (xstyle: ignore, off, skip-file...), no .xignore file nor [[path]] of .xconfig");
     this->_parser.setFlag("lang", {"l", "", "lang", ""}, {{"languages", true, languages}}, "Only these languages, comma separated (cpp,c,asm,py,sh,rs,lua,js,cmake,make,yaml,json,md)");
     this->_parser.setFlag("top", {"t", "", "top", ""}, {}, "Only the most used language of the files found");
     this->_parser.setFlag("mode", {"m", "", "mode", "XSTYLE_MODES"}, {{"levels", true, [](const std::string& v) -> std::optional<std::string> {
@@ -137,6 +163,7 @@ _cold void xstyle::Core::setup_(void)
     this->_parser.setFlag("format", {"", "", "format", ""}, {{"format", true, [](const std::string& v) {return choice_hook_(v, {"text", "md", "markdown", "json"});}}},
         "Format of the report file: text | md | json (default: from the extension)");
     this->_parser.setFlag("summary", {"S", "", "summary", ""}, {}, "Only the summary (counters by severity and code) in the terminal");
+    this->_parser.setFlag("showignored", {"", "", "show-ignored", ""}, {}, "Also list the issues ignored (comment, path, rule), not only their count");
     this->_parser.setFlag("rtk", {"", "", "rtk", ""}, {}, "Compact output for an AI (token saving): one line per issue, no color / source / table (env XSTYLE_RTK=1)");
     this->_parser.setFlag("color", {"", "", "no-color", ""}, {}, "No colors nor hyperlinks (also with NO_COLOR or when not in a terminal)");
     this->_parser.setFlag("link", {"", "", "link", "XSTYLE_LINK"}, {{"mode", true, [](const std::string& v) {return choice_hook_(v, {"file", "vscode", "none"});}}},
@@ -154,6 +181,7 @@ _cold void xstyle::Core::setup_(void)
     // Help in the order of the sections (the default one follows the hash order)
     this->_sections = {
         {"SELECTION", {"recursive", "diff", "diffref", "staged", "code", "ignore", "severity", "mode", "fail", "exclude", "lang", "top", "libutils", "r34"}},
+        {"IGNORE", {"ignorepath", "excludefrom", "gitignore", "inlineignore", "showignored"}},
         {"FIX", {"fix", "dry", "force", "dangerous", "header", "headerdesc", "commit", "commitall", "message"}},
         {"OUTPUT", {"rtk", "report", "format", "summary", "color", "link"}},
         {"INFORMATION", {"list", "explain", "version", "libcheck", "completion"}},
@@ -168,7 +196,7 @@ _cold std::vector<std::string> xstyle::Core::extractPaths_(const int argc, char*
         {"c", 1}, {"code", 1}, {"i", 1}, {"ignore", 1}, {"s", 1}, {"severity", 1}, {"F", 1}, {"fail-on", 1}, {"e", 1}, {"exclude", 1},
         {"l", 1}, {"lang", 1}, {"m", 1}, {"mode", 1}, {"u", 1}, {"libutils", 1}, {"o", 1}, {"report", 1}, {"format", 1}, {"link", 1}, {"x", 1}, {"explain", 1},
         {"completion", 1},
-        {"f", 2}, {"fix", 2}, {"header", 1}, {"header-desc", 1}, {"message", 1}, {"diff-ref", 1},
+        {"f", 2}, {"fix", 2}, {"header", 1}, {"header-desc", 1}, {"message", 1}, {"diff-ref", 1}, {"ignore-path", 1}, {"exclude-from", 1},
     };
     std::vector<std::string> arguments = {argc > 0 ? argv[0] : "xstyle"};
 
@@ -199,10 +227,14 @@ _cold void xstyle::Core::apply_(const std::string& id, const std::vector<std::st
 
     if (id == "recursive") this->_options.recursive = true;
     else if (id == "code") this->_options.codes = xstyle::split(value, ',');
-    else if (id == "ignore") this->_options.ignored = xstyle::split(value, ',');
+    else if (id == "ignore") append_(this->_options.ignored, xstyle::split(value, ','));
     else if (id == "severity") this->_options.minSeverity = *xstyle::parse_severity(value);
     else if (id == "fail") this->_options.failOn = *xstyle::parse_severity(value);
-    else if (id == "exclude") this->_options.excludes = xstyle::split(value, ',');
+    else if (id == "exclude") append_(this->_options.excludes, xstyle::split(value, ','));
+    else if (id == "ignorepath") append_(this->_options.ignorePaths, xstyle::split(value, ';'));
+    else if (id == "gitignore") this->_options.gitignore = false;
+    else if (id == "inlineignore") this->_options.inlineIgnores = false;
+    else if (id == "showignored") this->_options.showIgnored = true;
     else if (id == "top") this->_options.topOnly = true;
     else if (id == "r34") this->_options.r34 = true;
     else if (id == "mode")
@@ -231,6 +263,12 @@ _cold void xstyle::Core::apply_(const std::string& id, const std::vector<std::st
     else if (id == "completion") this->_completion = xstyle::lower(value);
 
     if (id == "fix" && !value.empty()) this->_options.fixCodes = xstyle::split(value, ',');
+    if (id == "excludefrom") {
+        std::ifstream file(value);
+        if (!file.is_open()) throw utils::exception::ErrorException(utils::exception::InternalCode::Read, "Can't read the exclude file " + value);
+        for (std::string line; std::getline(file, line);)
+            if (!xstyle::trim(line).empty() && !xstyle::trim(line).starts_with("#")) this->_options.excludes.push_back(xstyle::trim(line));
+    }
     if (id == "diffref") {
         this->_options.changedOnly = true;
         this->_options.diffRef = value;
@@ -242,8 +280,61 @@ _cold void xstyle::Core::apply_(const std::string& id, const std::vector<std::st
     if (id == "link") this->_options.link = xstyle::lower(value) == "vscode" ? xstyle::LinkMode::Vscode : xstyle::lower(value) == "none" ? xstyle::LinkMode::None : xstyle::LinkMode::File;
 }
 
+/* config */
+_cold std::vector<xstyle::PathRule> xstyle::Core::config_(const xstyle::Config& config)
+{
+    // Keys of .xconfig: the flag they give a default to (the command line and the environment win, the lists are added);
+    // exclude / ignore-path: gitignore-like patterns relative to the directory of the .xconfig (returned)
+    static const std::unordered_map<std::string, std::string> keys = {
+        {"code", "code"}, {"ignore", "ignore"}, {"severity", "severity"}, {"fail-on", "fail"}, {"lang", "lang"}, {"mode", "mode"}, {"libutils", "libutils"},
+        {"top", "top"}, {"link", "link"}, {"header", "header"}, {"header-desc", "headerdesc"}, {"r34", "r34"}, {"gitignore", "gitignore"},
+        {"inline-ignore", "inlineignore"}, {"exclude", ""}, {"ignore-path", ""},
+    };
+    const std::unordered_map<std::string, utils::arguments::Flag>& flags = this->_parser.getFlags();
+    std::vector<xstyle::PathRule> rules;
+
+    for (const xstyle::ConfigOption& option: config.options) {
+        auto it = keys.find(option.key);
+        if (it == keys.end()) {
+            std::string list;
+            for (const auto &[key, id]: std::map<std::string, std::string>(keys.begin(), keys.end()))
+                list += (list.empty() ? "" : ", ") + key;
+            throw utils::exception::ErrorException(utils::exception::InternalCode::InvalidArgument, option.source + ": unknown key '" + option.key + "' (" + list + ", [[path]])");
+        }
+        if (it->second.empty()) {
+            for (const std::string& value: option.values) {
+                std::optional<xstyle::PathRule> rule = xstyle::Ignore::parse(value, config.file.parent_path(), option.source);
+                if (!rule) continue;
+                if (option.key == "exclude" && !rule->codes.empty())
+                    throw utils::exception::ErrorException(utils::exception::InternalCode::InvalidArgument, option.source + ": exclude takes paths only (rules by path: ignore-path)");
+                if (option.key == "ignore-path" && rule->codes.empty()) rule->codes = {"*"};
+                rules.push_back(*rule);
+            }
+            continue;
+        }
+        const std::string& id = it->second;
+        if (this->_given.contains(id) && id != "ignore") continue;
+        if (flags.at(id).options.empty()) {
+            // A switch: true / false (gitignore and inline-ignore are on by default, their flag turns them off)
+            if (option.values.size() != 1 || (option.values[0] != "true" && option.values[0] != "false"))
+                throw utils::exception::ErrorException(utils::exception::InternalCode::InvalidArgument, option.source + ": " + option.key + " takes true or false");
+            const bool on = option.values[0] == "true";
+            if (on != (id == "gitignore" || id == "inlineignore")) this->apply_(id, {});
+            continue;
+        }
+        std::string value;
+        for (const std::string& part: option.values)
+            value += (value.empty() ? "" : ",") + part;
+        for (const auto &[name, mandatory, check]: flags.at(id).options)
+            if (const std::optional<std::string> error = check(value))
+                throw utils::exception::ErrorException(utils::exception::InternalCode::InvalidArgument, option.source + ": " + option.key + ": " + *error);
+        this->apply_(id, {value});
+    }
+    return rules;
+}
+
 /* files */
-_cold xstyle::Files xstyle::Core::collect_(const xstyle::ProjectInfo& project) const
+_cold xstyle::Files xstyle::Core::collect_(const xstyle::ProjectInfo& project, const xstyle::Ignore& ignore) const
 {
     xstyle::Files files;
     std::error_code error;
@@ -264,7 +355,8 @@ _cold xstyle::Files xstyle::Core::collect_(const xstyle::ProjectInfo& project) c
     };
     const std::function<void(const std::filesystem::path&, const bool)> add = [&](const std::filesystem::path& path, const bool explicitFile) {
         xstyle::Language language = xstyle::language_of(path);
-        if ((language == xstyle::Language::Other && !explicitFile) || excluded(path)) return;
+        if ((language == xstyle::Language::Other && !explicitFile) || excluded(path) || ignore.excluded(path, false)) return;
+        if (!explicitFile && ignore.gitIgnored(path)) return; // ignored by git (checked when given as argument)
         if (!explicitFile && path.filename().string().starts_with("generated_")) return; // generated code
         if (std::filesystem::file_size(path, error) > MAX_FILE_SIZE || binary_file_(path)) return;
         if (!this->_options.languages.empty() && std::find(this->_options.languages.begin(), this->_options.languages.end(), language) == this->_options.languages.end()) return;
@@ -294,7 +386,7 @@ _cold xstyle::Files xstyle::Core::collect_(const xstyle::ProjectInfo& project) c
         }
         for (std::filesystem::recursive_directory_iterator it(path, std::filesystem::directory_options::skip_permission_denied, error), end; it != end && !error; it.increment(error)) {
             const std::string name = it->path().filename().string();
-            if (it->is_directory() && (xstyle::skipped_directory(name) || excluded(it->path()))) {
+            if (it->is_directory() && (xstyle::skipped_directory(name) || excluded(it->path()) || ignore.excluded(it->path(), true) || ignore.gitIgnored(it->path()))) {
                 it.disable_recursion_pending();
                 continue;
             }
@@ -537,8 +629,10 @@ _cold void xstyle::Core::init(const int argc, char* argv[])
     const std::vector<std::string> arguments = this->extractPaths_(argc, argv);
     const utils::arguments::ParsedUsages usages = this->_parser.parse(arguments);
     if (usages.empty()) return;
-    for (const auto &[id, option, values]: usages[0].arguments)
+    for (const auto &[id, option, values]: usages[0].arguments) {
         this->apply_(id, values);
+        this->_given.insert(id);
+    }
     const char* rtk = std::getenv("XSTYLE_RTK");
     if (rtk && std::string(rtk) != "0" && std::string(rtk) != "") this->_options.rtk = true;
     if (this->_options.rtk) this->_options.color = false;
@@ -575,8 +669,32 @@ _cold void xstyle::Core::run(void)
             this->_options.changedLines[std::filesystem::weakly_canonical(path, error)] = ranges;
     }
     const std::set<std::filesystem::path> dirty = commit && !this->_options.commitAll ? xstyle::git::dirty_files(*repository) : std::set<std::filesystem::path>();
+
+    // .xconfig (the closest one from the working directory up to the root), then what is ignored by path
+    std::error_code pathError;
+    const std::filesystem::path cwd = std::filesystem::current_path();
+    const std::filesystem::path root = std::filesystem::weakly_canonical(project.root, pathError);
+    const bool inside = !std::filesystem::weakly_canonical(cwd, pathError).lexically_relative(root).generic_string().starts_with("..");
+    const std::optional<std::filesystem::path> configFile = xstyle::find_config(inside ? cwd : root, root);
+    const std::optional<xstyle::Config> config = configFile ? std::optional<xstyle::Config>(xstyle::read_config(*configFile)) : std::nullopt;
+    const std::vector<xstyle::PathRule> configRules = config ? this->config_(*config) : std::vector<xstyle::PathRule>();
+    xstyle::Ignore ignore(project.root, this->_options.inlineIgnores);
+    for (const xstyle::PathRule& rule: configRules)
+        ignore.addRule(rule, false);
+    if (config && this->_options.inlineIgnores)
+        for (const xstyle::PathRule& rule: config->paths)
+            ignore.addRule(rule, false);
+    for (const std::string& entry: this->_options.ignorePaths) {
+        std::optional<xstyle::PathRule> rule = xstyle::Ignore::parse(entry, cwd, "--ignore-path " + entry);
+        if (!rule) continue;
+        if (rule->codes.empty()) rule->codes = {"*"};
+        ignore.addRule(*rule, true);
+    }
+    ignore.setGit(this->_options.gitignore && repository.has_value());
+    if (this->_options.gitignore && repository) ignore.loadGit(*repository);
+
     xstyle::scan_sources(project);
-    xstyle::Files files = this->collect_(project);
+    xstyle::Files files = this->collect_(project, ignore);
     if (!project.libutilsUsed) {
         static const std::regex include(R"(#\s*include\s*[<"](utils/)?utils\.hpp[>"])");
         for (const auto &[path, language]: files) {
@@ -600,9 +718,8 @@ _cold void xstyle::Core::run(void)
     }
 
     // Check (and fix) every file
-    const xstyle::Checker checker(this->_options, project);
+    const xstyle::Checker checker(this->_options, project, &ignore);
     xstyle::Reporter reporter(this->_options, project, checker.libutils());
-    const std::filesystem::path cwd = std::filesystem::current_path();
     std::vector<std::filesystem::path> fixed; // files written by the fixes
     std::map<std::filesystem::path, std::map<std::string, std::size_t>> fixedCodes; // file -> code -> fixes applied
     bool r34Proof = false; // a checked file acknowledges the rule R34 (the integer 34, r34 in a name, a string or a comment)
@@ -627,7 +744,9 @@ _cold void xstyle::Core::run(void)
                 }
                 reporter.addFixes(display, applied);
             }
-            reporter.addIssues(checker.check(source));
+            std::vector<xstyle::Issue> ignored;
+            reporter.addIssues(checker.check(source, ignored));
+            reporter.addIgnored(ignored);
         } catch (const utils::exception::IException& e) {
             std::cerr << "xstyle: " << display << ": " << e.info() << std::endl;
         }

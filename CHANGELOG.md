@@ -20,12 +20,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [pre-release]
 ### Changed
+- **[MAJOR]** The files ignored by git are skipped (`git ls-files --others --ignored --exclude-standard`), unless given as argument; `--no-gitignore` (or `gitignore = false` in `.xconfig`) checks them
+- `-i` of the command line and `ignore` of `.xconfig` add up
 - README rules table, documentation site (rules page: C++, C and assembly families; languages page: C headers, ignored results, assembly) regenerated with the C and assembly rules
 - Documentation site in the better-html-doc style ([tsukini22.github.io/xstyle/docs](https://tsukini22.github.io/xstyle/docs/)): user guide, concepts (severities and fix levels, fix loop, libutils rules), options and rules generated from `xstyle --help` / `--list-rules`, security, EN / FR with search; sources in `docs/site/` (`docs/scripts/update_rules.py` removed)
 - **[MAJOR]** C files no longer get `CPP-*` codes: the layout rules shared with the C++ have their own `C-` code on a C file (`C-GUARD-MISSING`, `C-PTR-REF`, `C-HEADER`... `-c C` / `-i C` select them, `xstyle: ignore C-...`), the `CPP-*` rules are C++ only
 
 ### Added
 - Suppression comments: `xstyle: off [CODES]` ... `xstyle: on [CODES]` (a region of lines, up to the end of the file without `on`), `xstyle: ignore-next N [CODES]` (the next `N` lines), `xstyle: skip-file` (the file is not checked nor counted)
+- `.xignore` files (one per directory, like a `.gitignore`: `*` / `?` / `**`, `name/`, `!pattern`, `#` comments): paths not checked, or `pattern:CODES` to ignore rules there only
+- `.xconfig` (TOML, the closest one from the working directory up to the project root): default of the flags (`severity`, `ignore`, `lang`, `libutils`, `gitignore`...; the environment and the command line win), `exclude` / `ignore-path` patterns and `[[path]]` tables (`match` + `ignore = [codes]` or `exclude = true`)
+- `--ignore-path 'GLOB[:CODES];...'` (env `XSTYLE_IGNORE_PATH`): rules ignored on some paths only; `--exclude-from FILE`: the `-e` patterns of a file
+- `--no-inline-ignore`: audit mode, the suppression comments, the `.xignore` files and the `[[path]]` tables are not read
+- Issues ignored counted in the summary (`Ignored N issue(s) silenced (comment, path, rule)`, `| ignored N` in `--rtk`, `ignored` in the JSON and Markdown reports), `--show-ignored` lists them
+- `.xignore` of the repository: the generated `docs/search-index.*`
 - `G-UNUSED-IGNORE` (minor, auto fix): a suppression comment that silences nothing (compared to every issue of the file, before `-c` / `-s` / `--diff`); `--fix` removes the comment (an `off` region loses its `on` too)
 - C rules (`check/c.cpp`): `C-TYPE-NAME` (struct / union / enum `snake_case` with `_s` / `_u` / `_e`, typedef `_t`, enum values `UPPER_SNAKE`), `C-FUNC-NAME` (functions, parameters, variables in `snake_case`), `C-PTR-CHECK` (pointer parameter of a non static function dereferenced before being tested), `C-FUNC-LENGTH` (body over 40 lines of code), `C-NESTING` (more than 4 nested control blocks, a bare `{ }` not counted)
 - `CPP-UNCHECKED-RETURN` / `C-UNCHECKED-RETURN`: the result of a function returning a value ignored (`f(x);` alone in its statement): the free functions declared in the project (its sources are read once per run) and a libc / POSIX list (`malloc`, `read`, `write`, `fork`, `pthread_create`...); `(void)f(x);` ignores it on purpose

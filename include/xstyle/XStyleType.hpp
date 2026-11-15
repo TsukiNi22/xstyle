@@ -128,6 +128,7 @@ struct Issue {
     std::string link; // documentation of the rule (hyperlink)
     std::optional<xstyle::Fix> fix; // automatic fix (only for fixable rules)
     xstyle::FixMode mode = xstyle::FixMode::Manual; // how this issue can be fixed
+    std::string ignoredBy; // empty: reported, else comment | path | rule (counted, listed by --show-ignored)
 };
 
 struct Directive {
@@ -178,7 +179,10 @@ struct Options {
     std::vector<std::string> codes; // only these codes / prefixes (empty = every code)
     std::vector<std::string> ignored; // never these codes / prefixes
     std::vector<std::string> excludes; // path patterns skipped (substring or * glob)
-    bool inlineIgnores = true; // the xstyle: ... comments of the files (--no-inline-ignore: off)
+    bool inlineIgnores = true; // the xstyle: ... comments, the .xignore files and the [[path]] of .xconfig (--no-inline-ignore: off)
+    std::vector<std::string> ignorePaths; // --ignore-path GLOB[:CODES] (no codes: every rule)
+    bool gitignore = true; // the files ignored by git are skipped (--no-gitignore: checked)
+    bool showIgnored = false; // --show-ignored: list the issues ignored, not only their count
     std::vector<xstyle::Language> languages; // empty = every known language
     bool topOnly = false; // only the most used language
     xstyle::Severity minSeverity = xstyle::Severity::Negligible; // reported from this one

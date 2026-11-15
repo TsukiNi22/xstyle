@@ -148,6 +148,11 @@ xstyle -m force,manual                 # only these fix levels (auto, force, ask
 xstyle -c CPP-THIS,LU                  # only these rules (code, prefix or pattern: CPP, LU-*, G-TAB)
 xstyle -i G-TODO,CPP-AUTO              # every rule except these
 xstyle -l cpp,rs                       # only the C++ and Rust files (-t: only the most used language)
+xstyle --ignore-path 'tests/**:CPP-AUTO'  # rules ignored on some paths only (GLOB[:CODES], ; separated)
+xstyle --exclude-from paths.txt        # the -e patterns of a file (one per line)
+xstyle --no-gitignore                  # also the files ignored by git (skipped by default)
+xstyle --show-ignored                  # also list the issues silenced (comment, path, rule), not only their count
+xstyle --no-inline-ignore              # audit: no suppression comment, no .xignore, no [[path]] of .xconfig
 xstyle --fix                           # fix everything that can be fixed
 xstyle --fix CPP-NULL,G-TRAILING src   # fix only these rules, only in src
 xstyle --fix --force                   # also the [force-fix] ones (can change the behavior: check with -n first)
@@ -167,7 +172,9 @@ xstyle --r34                           # I have read the Terms and Conditions of
 
 - **Paths**: files or directories given as bare arguments; with no path the current directory is scanned
   recursively. Hidden folders, `build*`, `cmake-build-*`, `third_party`, `extern`, `vendor`, `node_modules`... and the
-  `generated_*` files are skipped, `-e build,*.gen.hpp` excludes more (folder name, path prefix or glob).
+  `generated_*` files are skipped, so are the files ignored by git (`--no-gitignore` checks them; a file given as argument
+  is always checked) and the paths of the `.xignore` files; `-e build,*.gen.hpp` excludes more (folder name, path prefix
+  or glob), see [Ignoring rules and files](#ignoring-rules-and-files).
 - **Fix level** of every issue, right after its code (`Fix` column of the table below, `fix` field of the JSON):
 
   | Tag | Fixed by | Meaning |
@@ -210,8 +217,9 @@ xstyle --r34                           # I have read the Terms and Conditions of
   Never with `--dry-run`.
 - **Exit status**: `0` clean, `1` issues left (from `--fail-on <severity>`, default every severity), `255` error.
   The **mandatory** rule (R34) is never counted: not in the exit status, the totals, `--fail-on` nor the pre-commit hook.
-- **Environment**: `XSTYLE_CODES`, `XSTYLE_IGNORE`, `XSTYLE_SEVERITY`, `XSTYLE_EXCLUDE`, `XSTYLE_LIBUTILS`,
-  `XSTYLE_LINK`, `XSTYLE_REPORT` give the default of the flag of the same name; `XSTYLE_R34=1` is `--r34`.
+- **Environment**: `XSTYLE_CODES`, `XSTYLE_IGNORE`, `XSTYLE_IGNORE_PATH`, `XSTYLE_SEVERITY`, `XSTYLE_EXCLUDE`,
+  `XSTYLE_LIBUTILS`, `XSTYLE_LINK`, `XSTYLE_REPORT` give the default of the flag of the same name; `XSTYLE_R34=1` is
+  `--r34`. They win over the `.xconfig` of the project, the command line wins over both.
 
 ### Rule R34 (mandatory)
 
@@ -242,6 +250,54 @@ a prefix or a pattern (`CPP`, `LU-*`), a reason after the codes starts with a lo
 
 A comment that silences nothing any more is reported by `G-UNUSED-IGNORE` (removed by `--fix`; an `off` region loses its
 `on` too). The rules that are off (libutils), `R34` and the comments silencing `G-UNUSED-IGNORE` itself are never reported.
+
+**By path**, a `.xignore` file in any directory of the project (read from the project root down to the file, like a
+`.gitignore`): one pattern per line, `#` comments, `*` / `?` / `**` jokers, a pattern with a `/` is relative to the
+directory of the `.xignore` (else a name at any depth), `name/` matches directories only, `!pattern` includes again (the
+last matching line wins). A line ending with `:CODE,...` does not exclude the paths: it ignores these rules there.
+
+```gitignore
+# .xignore
+third_party_copy/           # not checked at all
+*.gen.hpp
+!keep.gen.hpp
+tests/**:CPP-AUTO,G-TODO    # still checked, these rules ignored
+```
+
+**Project configuration**, `.xconfig` (TOML; the closest one from the working directory up to the project root): the
+default of the flags (the environment and the command line win, `ignore` is added to `-i`), `exclude` / `ignore-path`
+patterns relative to its directory, and `[[path]]` tables:
+
+```toml
+# .xconfig
+severity = "minor"            # -s
+fail-on = "major"             # -F
+ignore = ["CPP-AUTO"]         # -i (added)
+lang = ["cpp", "py"]          # -l
+libutils = "auto"             # -u
+gitignore = true              # false: --no-gitignore
+inline-ignore = true          # false: --no-inline-ignore
+exclude = ["third/**"]        # like a .xignore line
+ignore-path = ["examples/*:G-TODO"]
+
+[[path]]
+match = ["tests/**", "bench/**"]
+ignore = ["CPP-FUNC-LENGTH", "CPP-UNCHECKED-RETURN"]
+
+[[path]]
+match = "generated/"
+exclude = true
+```
+
+Keys: `code`, `ignore`, `severity`, `fail-on`, `lang`, `mode`, `libutils`, `top`, `link`, `header`, `header-desc`, `r34`,
+`gitignore`, `inline-ignore`, `exclude`, `ignore-path`; an unknown key or a wrong value stops xstyle with `<file>:<line>`.
+
+**Flags**: `-i CODES` (every path), `--ignore-path 'GLOB[:CODES];...'` (relative to the working directory, no codes:
+every rule), `-e PATTERNS` / `--exclude-from FILE` (paths skipped), `--no-gitignore`, `--no-inline-ignore` (audit: the
+comments, the `.xignore` files and the `[[path]]` tables are not read; the flags and the other keys of `.xconfig` stay).
+
+The issues silenced by a comment, a rule by path or `-i` are **counted** (`Ignored 3 issue(s) silenced (comment 1,
+path 2)`, `| ignored 3 (...)` in `--rtk`, `ignored` in the JSON report), `--show-ignored` lists them.
 
 ```cpp
 std::cout << "\033[1m"; // xstyle: ignore LU-ANSI

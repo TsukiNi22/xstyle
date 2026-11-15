@@ -111,6 +111,16 @@ if(XSTYLE_PACKAGE_BIN AND NOT CMAKE_CROSSCOMPILING)
         COMMAND sh -c "d=$(mktemp -d) && printf 'a = 1 # xstyle: ignore G-TRAILING\\n# xstyle: off G-TAB\\nb = 2\\n# xstyle: on\\n  c = 3 # xstyle: ignore G-INDENT\\n' > $d/f.py && $0 --rtk --r34 -c G-UNUSED-IGNORE $d/f.py; $0 --rtk --r34 --fix G-UNUSED-IGNORE $d/f.py >/dev/null; cat $d/f.py; rm -rf $d; exit 0" $<TARGET_FILE:xstyle>
     )
     set_tests_properties(Cli.UnusedIgnore PROPERTIES PASS_REGULAR_EXPRESSION "1:7 G-UNUSED-IGNORE.*2:1 G-UNUSED-IGNORE.*= 2 issues.*a = 1\nb = 2\n  c = 3 # xstyle")
+    # Paths ignored: .gitignore (default), .xignore of a sub-directory, rules ignored by path (.xignore, --ignore-path), counted as ignored
+    add_test(NAME Cli.IgnoredPaths
+        COMMAND sh -c "d=$(mktemp -d) && cd $d && git init -q . && mkdir -p src/gen tests data && for f in src/a.py src/gen/b.py tests/c.py data/d.py top.py; do printf 'x = 1  \\n' > $f; done && printf 'data/\\n' > .gitignore && printf 'gen/\\n' > src/.xignore && printf 'tests/**:G-TRAILING\\n' > .xignore && $0 --rtk --r34 --ignore-path 'top.py:G' --show-ignored; rm -rf $d; exit 0" $<TARGET_FILE:xstyle>
+    )
+    set_tests_properties(Cli.IgnoredPaths PROPERTIES PASS_REGULAR_EXPRESSION ">src/a.py.*~ tests/c.py:1:6 G-TRAILING [(]path[)].*~ top.py:1:6 G-TRAILING [(]path[)].*= 1 issues in 3 files.*ignored 2 [(]path 2[)]")
+    # .xconfig: default options, exclude, [[path]] tables (an array on several lines), the command line wins
+    add_test(NAME Cli.Xconfig
+        COMMAND sh -c "d=$(mktemp -d) && cd $d && mkdir -p src lib && printf 'x = 1  \\n\\ty = 2\\n' > src/a.py && cp src/a.py lib/b.py && cp src/a.py c.py && printf 'severity = \\\"major\\\" # G-TAB only\\nexclude = [\\\"lib/\\\"]\\n[[path]]\\nmatch = \\\"src/**\\\"\\nignore = [\\n    \\\"G-TAB\\\",\\n]\\n' > .xconfig && $0 --rtk --r34; $0 --rtk --r34 -s minor; rm -rf $d; exit 0" $<TARGET_FILE:xstyle>
+    )
+    set_tests_properties(Cli.Xconfig PROPERTIES PASS_REGULAR_EXPRESSION "2:1 G-TAB.*= 1 issues in 2 files.*ignored 1 [(]path 1[)].*= 3 issues in 2 files")
     add_test(NAME Cli.Version COMMAND $<TARGET_FILE:xstyle> --version)
     add_test(NAME Cli.ListRulesColumns COMMAND $<TARGET_FILE:xstyle> --list-rules --no-color)
     set_tests_properties(Cli.ListRulesColumns PROPERTIES PASS_REGULAR_EXPRESSION "cmake  +Indentation that is not a multiple of 4")

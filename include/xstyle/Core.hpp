@@ -22,6 +22,8 @@ File Description:
     #include "SourceFile.hpp"       // xstyle::SourceFile
     #include "XStyleType.hpp"       // xstyle::Options, xstyle::Language, xstyle::AppliedFix
     #include "Checker.hpp"          // xstyle::Checker
+    #include "Config.hpp"           // xstyle::Config
+    #include "Ignore.hpp"           // xstyle::Ignore, xstyle::PathRule
     #include <filesystem>           // std::filesystem::path
     #include <optional>             // std::optional
     #include <utility>              // std::pair
@@ -58,13 +60,15 @@ class Core {
         std::string _completion; // shell of the completion script to print
         std::optional<std::pair<std::string, std::string>> _headerAnswer; // <banner, description> kept for the next files (empty banner: skip)
         std::string _explain;
+        std::set<std::string> _given; // flags given on the command line or by their environment variable (they win over .xconfig)
         std::vector<std::pair<std::string, std::vector<std::string>>> _sections; // <title, flag ids> of the help, in order
 
         // ---------- Pre-Function -------- //
         _cold void setup_(void);
         _cold _nodiscard std::vector<std::string> extractPaths_(const int argc, char* argv[]);
         _cold void apply_(const std::string& id, const std::vector<std::string>& values);
-        _cold _nodiscard xstyle::Files collect_(const xstyle::ProjectInfo& project) const;
+        _cold _nodiscard std::vector<xstyle::PathRule> config_(const xstyle::Config& config); // options of .xconfig, returns its exclude / ignore-path rules
+        _cold _nodiscard xstyle::Files collect_(const xstyle::ProjectInfo& project, const xstyle::Ignore& ignore) const;
         _cold void listRules_(void) const;
         _cold void explain_(void) const;
         _cold void help_(const utils::arguments::ArgParser& parser) const;

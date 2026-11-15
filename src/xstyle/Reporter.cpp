@@ -197,6 +197,27 @@ _cold std::string xstyle::Reporter::fixes_(const bool tty) const
     return out.str();
 }
 
+_cold std::string xstyle::Reporter::ignored_(const bool tty) const
+{
+    std::ostringstream out;
+
+    for (const xstyle::Issue& issue: this->_ignored)
+        out << this->location_(issue, tty) << " " << this->paint_(issue.code, utils::iomanip::Color::Cyan, tty) << " " << this->paint_("[ignored by " + issue.ignoredBy + "]", utils::iomanip::Color::BrightBlack, tty)
+            << " " << issue.message << "\n";
+    return out.str();
+}
+
+_cold std::string xstyle::Reporter::ignoredCount_(void) const
+{
+    std::map<std::string, std::size_t> reasons;
+    for (const xstyle::Issue& issue: this->_ignored)
+        ++reasons[issue.ignoredBy];
+    std::string text;
+    for (const char* reason: {"comment", "path", "rule"})
+        if (reasons[reason] > 0) text += (text.empty() ? "" : ", ") + std::string(reason) + " " + std::to_string(reasons[reason]);
+    return std::to_string(this->_ignored.size()) + (text.empty() ? "" : " (" + text + ")");
+}
+
 _cold std::string xstyle::Reporter::summary_(const bool tty) const
 {
     std::ostringstream out;
@@ -233,6 +254,9 @@ _cold std::string xstyle::Reporter::summary_(const bool tty) const
     else if (this->_project.isLibutils) out << this->_project.libutilsVersion << " installed, the project is libutils itself";
     else out << this->_project.libutilsVersion << " installed, " << (this->_project.libutilsUsed ? "used" : "not used") << " by the project";
     out << " - libutils rules " << (this->_libutils ? "on" : "off") << "\n";
+    if (!this->_ignored.empty())
+        out << this->paint_("Ignored   ", utils::iomanip::Color::Default, tty, true) << this->ignoredCount_() << " issue(s) silenced"
+            << (this->_options.showIgnored ? "" : " (--show-ignored lists them, --no-inline-ignore shows them)") << "\n";
     if (this->_options.fix) {
         std::map<std::string, std::size_t> files;
         for (const auto &[file, fix]: this->_fixes)
@@ -299,6 +323,7 @@ _cold std::string xstyle::Reporter::markdown_(void) const
     out << "| **total** | **" << this->_issues.size() << "** |\n\n";
     for (const xstyle::Issue& issue: this->_mandatory)
         out << "Mandatory (not counted): `" << issue.code << "` " << markdown_escape_(issue.message) << " ([" << issue.link << "](" << issue.link << ")) - " << markdown_escape_(issue.suggestion) << "\n\n";
+    if (!this->_ignored.empty()) out << "Ignored: " << this->ignoredCount_() << " issue(s) silenced\n\n";
     if (this->_options.fix) out << "Fixed: " << this->_fixes.size() << " issue(s)" << (this->_options.dryRun ? " (dry run)" : "") << "\n\n";
 
     std::string file;
@@ -333,7 +358,7 @@ _cold std::string xstyle::Reporter::json_(void) const
     out << "    \"summary\": {";
     for (const xstyle::Severity severity: {xstyle::Severity::Unforgivable, xstyle::Severity::Major, xstyle::Severity::Minor, xstyle::Severity::Negligible})
         out << "\"" << xstyle::severity_name(severity) << "\": " << severities[severity] << ", ";
-    out << "\"total\": " << this->_issues.size() << ", \"fixed\": " << this->_fixes.size() << "},\n";
+    out << "\"total\": " << this->_issues.size() << ", \"fixed\": " << this->_fixes.size() << ", \"ignored\": " << this->_ignored.size() << "},\n";
     out << "    \"issues\": [";
     for (std::size_t i = 0; i < this->_issues.size(); ++i) {
         const xstyle::Issue& issue = this->_issues[i];
@@ -348,7 +373,13 @@ _cold std::string xstyle::Reporter::json_(void) const
         out << (i == 0 ? "" : ", ") << "{\"code\": \"" << issue.code << "\", \"severity\": \"" << xstyle::severity_name(issue.severity) << "\", \"message\": \"" << json_escape_(issue.message)
             << "\", \"link\": \"" << json_escape_(issue.link) << "\", \"hint\": \"" << json_escape_(issue.suggestion) << "\", \"fix\": \"force\"}";
     }
-    out << "]\n}\n";
+    out << "],\n    \"ignored\": [";
+    for (std::size_t i = 0; i < this->_ignored.size(); ++i) {
+        const xstyle::Issue& issue = this->_ignored[i];
+        out << (i == 0 ? "\n" : ",\n") << "        {\"file\": \"" << json_escape_(issue.file) << "\", \"line\": " << issue.line << ", \"column\": " << issue.column
+            << ", \"code\": \"" << issue.code << "\", \"by\": \"" << issue.ignoredBy << "\"}";
+    }
+    out << (this->_ignored.empty() ? "]" : "\n    ]") << "\n}\n";
     return out.str();
 }
 
@@ -399,6 +430,9 @@ _cold std::string xstyle::Reporter::rtk_(void) const
         }
     for (const xstyle::Issue& issue: this->_mandatory)
         out << "! " << issue.code << " mandatory (not counted) " << issue.message << " => " << issue.link << " | " << issue.suggestion << "\n";
+    if (this->_options.showIgnored)
+        for (const xstyle::Issue& issue: this->_ignored)
+            out << "~ " << issue.file << ":" << issue.line << ":" << issue.column << " " << issue.code << " (" << issue.ignoredBy << ")\n";
     if (!this->_fixes.empty()) {
         std::map<std::string, std::size_t> codes;
         for (const auto &[fixedFile, fix]: this->_fixes)
@@ -412,6 +446,7 @@ _cold std::string xstyle::Reporter::rtk_(void) const
         << " n" << bySeverity[0] << " | fix a" << byMode[1] << " f" << byMode[2] << " d" << byMode[3] << " q" << byMode[4] << " -" << byMode[0];
     if (byMode[1] > 0 && !this->_options.fix) out << " | xstyle --fix";
     if (!this->_mandatory.empty()) out << " | mandatory " << this->_mandatory.size() << " (!)";
+    if (!this->_ignored.empty()) out << " | ignored " << this->ignoredCount_();
     return out.str() + "\n";
 }
 
@@ -426,6 +461,8 @@ _cold void xstyle::Reporter::print(std::ostream& out) const
     if (!this->_fixes.empty()) out << this->paint_(this->_options.dryRun ? "Would fix:" : "Fixed:", utils::iomanip::Color::Green, tty, true) << "\n" << this->fixes_(tty) << "\n";
     if (!this->_options.summaryOnly && !this->_issues.empty()) out << this->issues_(tty) << "\n";
     if (!this->_options.summaryOnly && !this->_mandatory.empty()) out << this->mandatory_(tty) << "\n";
+    if (!this->_options.summaryOnly && this->_options.showIgnored && !this->_ignored.empty())
+        out << this->paint_("Ignored:", utils::iomanip::Color::BrightBlack, tty, true) << "\n" << this->ignored_(tty) << "\n";
     out << this->summary_(tty);
 }
 
@@ -447,6 +484,7 @@ _cold void xstyle::Reporter::write(void) const
             if (!this->_fixes.empty()) file << (this->_options.dryRun ? "Would fix:\n" : "Fixed:\n") << this->fixes_(false) << "\n";
             file << this->issues_(false) << "\n";
             if (!this->_mandatory.empty()) file << this->mandatory_(false) << "\n";
+            if (this->_options.showIgnored && !this->_ignored.empty()) file << "Ignored:\n" << this->ignored_(false) << "\n";
             file << this->summary_(false);
             break;
     }

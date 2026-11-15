@@ -20,6 +20,7 @@ File Description:
     #include <utils/utils.hpp>      // _hot, _cold, _nodiscard
     #include "XStyleType.hpp"       // xstyle::Options, xstyle::ProjectInfo, xstyle::Issue, xstyle::AppliedFix
     #include "SourceFile.hpp"       // xstyle::SourceFile
+    #include "Ignore.hpp"           // xstyle::Ignore
     #include <string_view>          // std::string_view
     #include <vector>               // std::vector
 
@@ -36,14 +37,16 @@ class Checker {
     private:
         const xstyle::Options& _options;
         const xstyle::ProjectInfo& _project;
+        const xstyle::Ignore* _ignore = nullptr; // rules ignored by path (nullptr: none)
         bool _libutils = false; // libutils rules enabled
 
         // ---------- Pre-Function -------- //
-        _hot _nodiscard bool selected_(std::string_view code, const bool fix) const;
+        _hot _nodiscard bool chosen_(std::string_view code, const bool fix) const; // -c / --fix CODES
+        _hot _nodiscard bool selected_(std::string_view code, const bool fix) const; // chosen and not ignored (-i)
         _hot _nodiscard bool suppressed_(const std::vector<xstyle::Directive>& directives, const xstyle::Issue& issue) const;
         _hot void unused_(const xstyle::SourceFile& file, const std::vector<xstyle::Directive>& directives, std::vector<xstyle::Issue>& issues) const; // G-UNUSED-IGNORE
         _hot _nodiscard bool changed_(const xstyle::SourceFile& file, const std::size_t line) const;
-        _hot _nodiscard std::vector<xstyle::Issue> run_(const xstyle::SourceFile& file, const bool fix) const;
+        _hot _nodiscard std::vector<xstyle::Issue> run_(const xstyle::SourceFile& file, const bool fix, std::vector<xstyle::Issue>* ignored = nullptr) const;
 
     public:
         // ---------- Pre-Function -------- //
@@ -52,7 +55,8 @@ class Checker {
         _hot _nodiscard static std::vector<xstyle::Directive> directives(const xstyle::SourceFile& file); // xstyle: ... comments of the file
 
         // ------------ Function ---------- //
-        _hot _nodiscard inline std::vector<xstyle::Issue> check(const xstyle::SourceFile& file) const {return this->run_(file, false);};
+        _hot _nodiscard inline std::vector<xstyle::Issue> check(const xstyle::SourceFile& file) const                                        {return this->run_(file, false);};
+        _hot _nodiscard inline std::vector<xstyle::Issue> check(const xstyle::SourceFile& file, std::vector<xstyle::Issue>& ignored) const {return this->run_(file, false, &ignored);}; // + the ignored ones
         _cold _nodiscard inline bool libutils(void) const                                             {return this->_libutils;};
         _cold _nodiscard inline bool wants(std::string_view code) const                               {return this->selected_(code, true);}; // code selected for the fixes
         _cold _nodiscard inline bool shows(std::string_view code) const                               {return this->selected_(code, false);}; // code selected for the display
@@ -62,7 +66,7 @@ class Checker {
         Checker& operator=(Checker&& other) = delete;
 
         // ---------- Constructor --------- //
-        Checker(const xstyle::Options& options, const xstyle::ProjectInfo& project);
+        Checker(const xstyle::Options& options, const xstyle::ProjectInfo& project, const xstyle::Ignore* ignore = nullptr);
         Checker(const Checker& other) = delete;
         Checker(Checker&& other) = delete;
 

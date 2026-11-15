@@ -112,6 +112,8 @@ set(SRC_SHARED
     src/xstyle/Header.cpp
     src/xstyle/Git.cpp
     src/xstyle/R34.cpp
+    src/xstyle/Ignore.cpp
+    src/xstyle/Config.cpp
 
     # Core (sub-part: checks)
     src/xstyle/check/generic.cpp
