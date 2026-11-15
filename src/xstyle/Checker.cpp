@@ -45,10 +45,14 @@ _hot bool xstyle::Checker::selected_(std::string_view code, const bool fix) cons
 
 _hot bool xstyle::Checker::suppressed_(const std::vector<xstyle::Directive>& directives, const xstyle::Issue& issue) const
 {
+    // G-UNUSED-IGNORE only by a comment that names it (a comment silencing every rule would silence its own issue)
+    const bool unused = issue.code == "G-UNUSED-IGNORE";
     for (const xstyle::Directive& directive: directives) {
         if (directive.kind == xstyle::DirectiveKind::On) continue;
         if (directive.first != 0 && (issue.line < directive.first || issue.line > directive.last)) continue;
-        if (directive.codes.empty() || std::any_of(directive.codes.begin(), directive.codes.end(), [&](const std::string& p) {return xstyle::match_code(issue.code, p);})) return true;
+        if ((directive.codes.empty() && !unused) || std::any_of(directive.codes.begin(), directive.codes.end(), [&](const std::string& p) {
+            return unused ? p.starts_with("G-UNUSED") : xstyle::match_code(issue.code, p);
+        })) return true;
     }
     return false;
 }
@@ -175,14 +179,15 @@ _hot bool xstyle::Checker::skipped(const xstyle::SourceFile& file) const
     return std::any_of(found.begin(), found.end(), [](const xstyle::Directive& d) {return d.kind == xstyle::DirectiveKind::SkipFile;});
 }
 
-_hot std::vector<xstyle::Issue> xstyle::Checker::run_(const xstyle::SourceFile& file, const bool fix, std::vector<xstyle::Issue>* ignored) const
+_hot std::vector<xstyle::Issue> xstyle::Checker::raw_(const xstyle::SourceFile& file, bool& templateFile) const
 {
+    // Every issue of the file, before any selection
     xstyle::check::Issues issues;
     const xstyle::Language language = file.getLanguage();
 
     // A template ({{NAME}} placeholders) is not valid code yet: only the generic rules
     static const std::regex placeholder(R"(\{\{[A-Z][A-Z0-9_]*\}\})");
-    const bool templateFile = std::any_of(file.getLines().begin(), file.getLines().end(), [](const std::string& line) {
+    templateFile = std::any_of(file.getLines().begin(), file.getLines().end(), [](const std::string& line) {
         return line.find("{{") != std::string::npos && std::regex_search(line, placeholder);
     });
 
@@ -197,6 +202,27 @@ _hot std::vector<xstyle::Issue> xstyle::Checker::run_(const xstyle::SourceFile& 
         if (language == xstyle::Language::Rust) xstyle::check::rust(file, issues);
         if (language == xstyle::Language::CMake) xstyle::check::cmake(file, issues);
     }
+    return issues;
+}
+
+_hot std::vector<std::size_t> xstyle::Checker::unused(const xstyle::SourceFile& file) const
+{
+    bool templateFile = false;
+    std::vector<xstyle::Issue> issues = this->raw_(file, templateFile);
+    std::vector<std::size_t> lines;
+    if (templateFile) return lines;
+    const std::size_t count = issues.size();
+    this->unused_(file, xstyle::Checker::directives(file), issues);
+    for (std::size_t i = count; i < issues.size(); ++i)
+        lines.push_back(issues[i].line);
+    return lines;
+}
+
+_hot std::vector<xstyle::Issue> xstyle::Checker::run_(const xstyle::SourceFile& file, const bool fix, std::vector<xstyle::Issue>* ignored) const
+{
+    bool templateFile = false;
+    xstyle::check::Issues issues = this->raw_(file, templateFile);
+    const xstyle::Language language = file.getLanguage();
 
     // Selection: language of the rule, codes, severity, changed lines; then what is ignored (counted): comments (and the ones that silence
     // nothing), rules ignored by path (.xignore, [[path]] of .xconfig, --ignore-path), rules ignored (-i)

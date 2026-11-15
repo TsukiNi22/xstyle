@@ -153,6 +153,8 @@ _cold void xstyle::Core::setup_(void)
     this->_parser.setFlag("force", {"", "", "force", ""}, {}, "With --fix: also the [force-fix] fixes, that can change the behavior (set -euo pipefail, encoding...)");
     this->_parser.setFlag("dangerous", {"", "", "dangerous-force", ""}, {},
         "With --fix: also the [danger-fix] fixes, guessed and possibly wrong (types guessed from the usage, pointer casts...), implies --force");
+    this->_parser.setFlag("addignore", {"", "", "add-ignore", ""}, {},
+        "Write a xstyle: ignore CODE comment on the line of every issue left (after -c / -s / -m; -n to preview), to adopt xstyle on old code");
     this->_parser.setFlag("header", {"", "", "header", "XSTYLE_HEADER"}, {{"banner", true, utils::arguments::defaultTrueParsingHook}},
         "With --fix: banner of the missing file headers: none | default (XARTANIA) | <text> (asked per file when not given)");
     this->_parser.setFlag("headerdesc", {"", "", "header-desc", ""}, {{"text", true, utils::arguments::defaultTrueParsingHook}},
@@ -181,7 +183,7 @@ _cold void xstyle::Core::setup_(void)
     // Help in the order of the sections (the default one follows the hash order)
     this->_sections = {
         {"SELECTION", {"recursive", "diff", "diffref", "staged", "code", "ignore", "severity", "mode", "fail", "exclude", "lang", "top", "libutils", "r34"}},
-        {"IGNORE", {"ignorepath", "excludefrom", "gitignore", "inlineignore", "showignored"}},
+        {"IGNORE", {"ignorepath", "excludefrom", "gitignore", "inlineignore", "addignore", "showignored"}},
         {"FIX", {"fix", "dry", "force", "dangerous", "header", "headerdesc", "commit", "commitall", "message"}},
         {"OUTPUT", {"rtk", "report", "format", "summary", "color", "link"}},
         {"INFORMATION", {"list", "explain", "version", "libcheck", "completion"}},
@@ -235,6 +237,7 @@ _cold void xstyle::Core::apply_(const std::string& id, const std::vector<std::st
     else if (id == "gitignore") this->_options.gitignore = false;
     else if (id == "inlineignore") this->_options.inlineIgnores = false;
     else if (id == "showignored") this->_options.showIgnored = true;
+    else if (id == "addignore") this->_options.addIgnore = true;
     else if (id == "top") this->_options.topOnly = true;
     else if (id == "r34") this->_options.r34 = true;
     else if (id == "mode")
@@ -456,6 +459,52 @@ _cold std::vector<xstyle::AppliedFix> xstyle::Core::header_(const xstyle::Checke
     header.push_back("");
     source.apply({xstyle::Fix{xstyle::FixKind::Replace, 0, 0, header, false}});
     return {xstyle::AppliedFix{code, 1, {}, header}};
+}
+
+_cold std::vector<xstyle::AppliedFix> xstyle::Core::addIgnore_(const xstyle::Checker& checker, xstyle::SourceFile& source) const
+{
+    // xstyle: ignore CODE,... at the end of the line of every issue left, in the comment of the language; never on a line that ends
+    // in a string / here-document / continuation, an empty line, a line that has a directive already, nor for a whole file issue
+    static const std::map<xstyle::Language, std::string> prefixes = {
+        {xstyle::Language::Cpp, "//"}, {xstyle::Language::C, "//"}, {xstyle::Language::JavaScript, "//"}, {xstyle::Language::Rust, "//"},
+        {xstyle::Language::Python, "#"}, {xstyle::Language::Shell, "#"}, {xstyle::Language::CMake, "#"}, {xstyle::Language::Makefile, "#"},
+        {xstyle::Language::Lua, "--"}, {xstyle::Language::Asm, ";"},
+    };
+    auto prefix = prefixes.find(source.getLanguage());
+    if (prefix == prefixes.end()) return {};
+    std::map<std::size_t, std::set<std::string>> lines; // 0-based line -> codes
+    for (const xstyle::Issue& issue: checker.check(source))
+        if (issue.line > 0) lines[issue.line - 1].insert(issue.code);
+
+    std::vector<xstyle::Fix> fixes;
+    std::vector<xstyle::AppliedFix> applied;
+    const std::vector<std::string>& text = source.getLines();
+    for (const auto &[line, codes]: lines) {
+        const std::string& current = text[line];
+        const std::size_t last = current.find_last_not_of(" \t");
+        if (last == std::string::npos || current[last] == '\\' || current.find("xstyle:") != std::string::npos) continue;
+        const bool masked = source.getCode()[line].size() > last && source.getCode()[line][last] == ' ' && source.getComments()[line].size() > last && source.getComments()[line][last] == ' ';
+        if (masked) continue; // string, here-document: the comment would be data
+        std::string list;
+        for (const std::string& code: codes)
+            list += (list.empty() ? "" : ",") + code;
+        const std::string added = current + " " + prefix->second + " xstyle: ignore " + list;
+        fixes.push_back(xstyle::Fix{xstyle::FixKind::Replace, line, 1, {added}});
+        applied.push_back(xstyle::AppliedFix{list, line + 1, {current}, {added}});
+    }
+    if (fixes.empty()) return applied;
+    source.apply(fixes);
+
+    // A comment that would silence nothing (the comment itself removes the issue: trailing whitespace...) is taken back
+    std::vector<xstyle::Fix> back;
+    for (const std::size_t line: checker.unused(source)) {
+        auto it = std::find_if(applied.begin(), applied.end(), [&](const xstyle::AppliedFix& a) {return a.line == line;});
+        if (it == applied.end()) continue;
+        back.push_back(xstyle::Fix{xstyle::FixKind::Replace, line - 1, 1, it->before});
+        applied.erase(it);
+    }
+    if (!back.empty()) source.apply(back);
+    return applied;
 }
 
 /* git */
@@ -743,6 +792,11 @@ _cold void xstyle::Core::run(void)
                         ++fixedCodes[path][fix.code];
                 }
                 reporter.addFixes(display, applied);
+            }
+            if (this->_options.addIgnore) {
+                const std::vector<xstyle::AppliedFix> added = this->addIgnore_(checker, source);
+                if (!added.empty() && !this->_options.dryRun) source.save();
+                reporter.addIgnores(display, added);
             }
             std::vector<xstyle::Issue> ignored;
             reporter.addIssues(checker.check(source, ignored));

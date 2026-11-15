@@ -41,6 +41,7 @@ class Reporter {
         std::vector<xstyle::Issue> _ignored; // silenced by a comment, a rule by path or -i: counted, listed by --show-ignored
         std::vector<xstyle::Issue> _mandatory; // mandatory rules (R34): displayed, never counted nor in the exit status
         std::vector<std::pair<std::string, xstyle::AppliedFix>> _fixes; // <file, fix>
+        std::vector<std::pair<std::string, xstyle::AppliedFix>> _added; // <file, suppression comment written by --add-ignore> (code: its codes)
 
         // ---------- Pre-Function -------- //
         _cold _nodiscard std::string paint_(const std::string& text, const utils::iomanip::Color color, const bool tty, const bool bold = false) const;
@@ -48,7 +49,7 @@ class Reporter {
         _cold _nodiscard std::string location_(const xstyle::Issue& issue, const bool tty) const;
         _cold _nodiscard std::string issues_(const bool tty) const;
         _cold _nodiscard std::string mandatory_(const bool tty) const;
-        _cold _nodiscard std::string fixes_(const bool tty) const;
+        _cold _nodiscard std::string fixes_(const bool tty, const std::vector<std::pair<std::string, xstyle::AppliedFix>>& fixes) const;
         _cold _nodiscard std::string ignored_(const bool tty) const; // --show-ignored
         _cold _nodiscard std::string ignoredCount_(void) const; // N (comment X, path Y, rule Z)
         _cold _nodiscard std::string summary_(const bool tty) const;
@@ -61,6 +62,7 @@ class Reporter {
         /* setup */
         _cold void addFile(const xstyle::SourceFile& file);
         _cold void addFixes(const std::string& file, const std::vector<xstyle::AppliedFix>& fixes);
+        _cold void addIgnores(const std::string& file, const std::vector<xstyle::AppliedFix>& added); // --add-ignore
 
         /* output */
         _cold void print(std::ostream& out) const; // terminal

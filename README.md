@@ -153,6 +153,7 @@ xstyle --exclude-from paths.txt        # the -e patterns of a file (one per line
 xstyle --no-gitignore                  # also the files ignored by git (skipped by default)
 xstyle --show-ignored                  # also list the issues silenced (comment, path, rule), not only their count
 xstyle --no-inline-ignore              # audit: no suppression comment, no .xignore, no [[path]] of .xconfig
+xstyle --add-ignore -c CPP-AUTO        # write xstyle: ignore CPP-AUTO on the lines of these issues (-n to preview)
 xstyle --fix                           # fix everything that can be fixed
 xstyle --fix CPP-NULL,G-TRAILING src   # fix only these rules, only in src
 xstyle --fix --force                   # also the [force-fix] ones (can change the behavior: check with -n first)
@@ -249,7 +250,8 @@ a prefix or a pattern (`CPP`, `LU-*`), a reason after the codes starts with a lo
 | `xstyle: skip-file` | the file is not checked nor counted |
 
 A comment that silences nothing any more is reported by `G-UNUSED-IGNORE` (removed by `--fix`; an `off` region loses its
-`on` too). The rules that are off (libutils), `R34` and the comments silencing `G-UNUSED-IGNORE` itself are never reported.
+`on` too). The rules that are off (libutils), `R34` and the comments silencing `G-UNUSED-IGNORE` itself are never reported; only a
+comment naming it (`xstyle: ignore G-UNUSED-IGNORE`) silences it, never a comment of every rule.
 
 **By path**, a `.xignore` file in any directory of the project (read from the project root down to the file, like a
 `.gitignore`): one pattern per line, `#` comments, `*` / `?` / `**` jokers, a pattern with a `/` is relative to the
@@ -295,6 +297,12 @@ Keys: `code`, `ignore`, `severity`, `fail-on`, `lang`, `mode`, `libutils`, `top`
 **Flags**: `-i CODES` (every path), `--ignore-path 'GLOB[:CODES];...'` (relative to the working directory, no codes:
 every rule), `-e PATTERNS` / `--exclude-from FILE` (paths skipped), `--no-gitignore`, `--no-inline-ignore` (audit: the
 comments, the `.xignore` files and the `[[path]]` tables are not read; the flags and the other keys of `.xconfig` stay).
+
+**Adopting xstyle on old code**: `--add-ignore` writes `xstyle: ignore CODE,...` at the end of the line of every issue
+left (after `-c` / `-s` / `-m` / `--diff`; `-n` previews), in the comment of the language (`//`, `#`, `--`, `;`). Never on
+a line ending in a string, a here-document or a `\` continuation, an empty line, a line that already has a directive,
+nor for a whole file issue; a comment that would silence nothing (it removes the issue itself, like a trailing
+whitespace) is taken back. Markdown, JSON and YAML files are left as they are.
 
 The issues silenced by a comment, a rule by path or `-i` are **counted** (`Ignored 3 issue(s) silenced (comment 1,
 path 2)`, `| ignored 3 (...)` in `--rtk`, `ignored` in the JSON report), `--show-ignored` lists them.

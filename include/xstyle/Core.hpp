@@ -74,6 +74,7 @@ class Core {
         _cold void help_(const utils::arguments::ArgParser& parser) const;
         _cold void completion_(void) const; // Core-Completion.cpp
         _cold _nodiscard std::vector<xstyle::AppliedFix> header_(const xstyle::Checker& checker, xstyle::SourceFile& source);
+        _cold _nodiscard std::vector<xstyle::AppliedFix> addIgnore_(const xstyle::Checker& checker, xstyle::SourceFile& source) const; // --add-ignore
         _cold void commit_(const std::filesystem::path& repository, const std::vector<std::filesystem::path>& fixed,
             const std::map<std::filesystem::path, std::map<std::string, std::size_t>>& fixedCodes, const std::set<std::filesystem::path>& dirty) const;
         _cold void libutilsCheck_(void);

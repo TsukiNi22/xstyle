@@ -121,6 +121,11 @@ if(XSTYLE_PACKAGE_BIN AND NOT CMAKE_CROSSCOMPILING)
         COMMAND sh -c "d=$(mktemp -d) && cd $d && mkdir -p src lib && printf 'x = 1  \\n\\ty = 2\\n' > src/a.py && cp src/a.py lib/b.py && cp src/a.py c.py && printf 'severity = \\\"major\\\" # G-TAB only\\nexclude = [\\\"lib/\\\"]\\n[[path]]\\nmatch = \\\"src/**\\\"\\nignore = [\\n    \\\"G-TAB\\\",\\n]\\n' > .xconfig && $0 --rtk --r34; $0 --rtk --r34 -s minor; rm -rf $d; exit 0" $<TARGET_FILE:xstyle>
     )
     set_tests_properties(Cli.Xconfig PROPERTIES PASS_REGULAR_EXPRESSION "2:1 G-TAB.*= 1 issues in 2 files.*ignored 1 [(]path 1[)].*= 3 issues in 2 files")
+    # --add-ignore: a comment on the line of the issues left, never in a string nor when the comment itself removes the issue
+    add_test(NAME Cli.AddIgnore
+        COMMAND sh -c "d=$(mktemp -d) && printf 'x = 1  \\ns = \\\"\\\"\\\"a  \\nb\\\"\\\"\\\"\\n\\ndef f(a):\\n    return a\\n' > $d/a.py && $0 --rtk --r34 --add-ignore $d/a.py; cat $d/a.py; rm -rf $d; exit 0" $<TARGET_FILE:xstyle>
+    )
+    set_tests_properties(Cli.AddIgnore PROPERTIES PASS_REGULAR_EXPRESSION "added 1 ignore comments.*ignored 1 [(]comment 1[)].*x = 1  .*def f[(]a[)]: # xstyle: ignore PY-TYPE-HINTS")
     add_test(NAME Cli.Version COMMAND $<TARGET_FILE:xstyle> --version)
     add_test(NAME Cli.ListRulesColumns COMMAND $<TARGET_FILE:xstyle> --list-rules --no-color)
     set_tests_properties(Cli.ListRulesColumns PROPERTIES PASS_REGULAR_EXPRESSION "cmake  +Indentation that is not a multiple of 4")

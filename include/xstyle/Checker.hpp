@@ -46,12 +46,14 @@ class Checker {
         _hot _nodiscard bool suppressed_(const std::vector<xstyle::Directive>& directives, const xstyle::Issue& issue) const;
         _hot void unused_(const xstyle::SourceFile& file, const std::vector<xstyle::Directive>& directives, std::vector<xstyle::Issue>& issues) const; // G-UNUSED-IGNORE
         _hot _nodiscard bool changed_(const xstyle::SourceFile& file, const std::size_t line) const;
+        _hot _nodiscard std::vector<xstyle::Issue> raw_(const xstyle::SourceFile& file, bool& templateFile) const; // every issue, before any selection
         _hot _nodiscard std::vector<xstyle::Issue> run_(const xstyle::SourceFile& file, const bool fix, std::vector<xstyle::Issue>* ignored = nullptr) const;
 
     public:
         // ---------- Pre-Function -------- //
         _hot std::vector<xstyle::AppliedFix> fix(xstyle::SourceFile& file) const; // fix loop, returns what was changed
-        _hot _nodiscard bool skipped(const xstyle::SourceFile& file) const; // xstyle: skip-file (not checked nor counted)
+        _hot _nodiscard bool skipped(const xstyle::SourceFile& file) const;
+        _hot _nodiscard std::vector<std::size_t> unused(const xstyle::SourceFile& file) const; // 1-based lines of the comments that silence nothing // xstyle: skip-file (not checked nor counted)
         _hot _nodiscard static std::vector<xstyle::Directive> directives(const xstyle::SourceFile& file); // xstyle: ... comments of the file
 
         // ------------ Function ---------- //

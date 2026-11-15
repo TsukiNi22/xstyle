@@ -183,6 +183,7 @@ struct Options {
     std::vector<std::string> ignorePaths; // --ignore-path GLOB[:CODES] (no codes: every rule)
     bool gitignore = true; // the files ignored by git are skipped (--no-gitignore: checked)
     bool showIgnored = false; // --show-ignored: list the issues ignored, not only their count
+    bool addIgnore = false; // --add-ignore: write xstyle: ignore CODE on the lines of the issues left
     std::vector<xstyle::Language> languages; // empty = every known language
     bool topOnly = false; // only the most used language
     xstyle::Severity minSeverity = xstyle::Severity::Negligible; // reported from this one
