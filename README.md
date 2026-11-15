@@ -227,12 +227,27 @@ reminder, not a style rule:
  - `xstyle --fix --force` writes `R34.md` (a long explanation of the rule: statement, origin, spread, interpretation),
    which acknowledges it; an existing `R34.md` is never replaced; `xstyle -x R34` explains it.
 
-Suppression, in a comment of the file:
+### Ignoring rules and files
+
+In a comment of the file (Markdown: in a `<!-- -->` comment); without a code every rule is silenced there, a code can be
+a prefix or a pattern (`CPP`, `LU-*`), a reason after the codes starts with a lower case word or a parenthesis:
+
+| Comment | Silences |
+|---|---|
+| `xstyle: ignore [CODE,...]` | this line |
+| `xstyle: ignore-next [N] [CODE,...]` | the next line (the next `N` lines) |
+| `xstyle: off [CODE,...]` ... `xstyle: on [CODE,...]` | the lines between (up to the end of the file without `on`; `on` alone closes every open region) |
+| `xstyle: ignore-file [CODE,...]` | the whole file |
+| `xstyle: skip-file` | the file is not checked nor counted |
 
 ```cpp
 std::cout << "\033[1m"; // xstyle: ignore LU-ANSI
-// xstyle: ignore-next CPP-AUTO
+// xstyle: ignore-next 2 CPP-AUTO
 auto lambda = [](int x) {return x * 2;};
+auto other = [](int x) {return x * 3;};
+// xstyle: off CPP-ONELINER-ALIGN (table aligned by hand)
+// ...
+// xstyle: on
 // xstyle: ignore-file CPP-GUARD-MISSING (no guard on purpose)
 ```
 

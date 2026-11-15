@@ -40,13 +40,15 @@ class Checker {
 
         // ---------- Pre-Function -------- //
         _hot _nodiscard bool selected_(std::string_view code, const bool fix) const;
-        _hot _nodiscard bool suppressed_(const xstyle::SourceFile& file, const xstyle::Issue& issue) const;
+        _hot _nodiscard bool suppressed_(const std::vector<xstyle::Directive>& directives, const xstyle::Issue& issue) const;
         _hot _nodiscard bool changed_(const xstyle::SourceFile& file, const std::size_t line) const;
         _hot _nodiscard std::vector<xstyle::Issue> run_(const xstyle::SourceFile& file, const bool fix) const;
 
     public:
         // ---------- Pre-Function -------- //
         _hot std::vector<xstyle::AppliedFix> fix(xstyle::SourceFile& file) const; // fix loop, returns what was changed
+        _hot _nodiscard bool skipped(const xstyle::SourceFile& file) const; // xstyle: skip-file (not checked nor counted)
+        _hot _nodiscard static std::vector<xstyle::Directive> directives(const xstyle::SourceFile& file); // xstyle: ... comments of the file
 
         // ------------ Function ---------- //
         _hot _nodiscard inline std::vector<xstyle::Issue> check(const xstyle::SourceFile& file) const {return this->run_(file, false);};

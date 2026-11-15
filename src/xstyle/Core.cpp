@@ -489,8 +489,10 @@ _cold void xstyle::Core::help_(const utils::arguments::ArgParser& parser) const
         << "    xstyle -x CPP-THIS                     explain a rule (-L: every rule)\n";
     std::cout << "\n" << bold << "SUPPRESSION" << reset << " (in a comment)\n"
         << "    xstyle: ignore [CODE,...]              this line\n"
-        << "    xstyle: ignore-next [CODE,...]         the next line\n"
-        << "    xstyle: ignore-file [CODE,...]         the whole file\n";
+        << "    xstyle: ignore-next [N] [CODE,...]     the next line (the next N lines)\n"
+        << "    xstyle: off [CODE,...]                 up to the next xstyle: on [CODE,...] (or the end of the file)\n"
+        << "    xstyle: ignore-file [CODE,...]         the whole file\n"
+        << "    xstyle: skip-file                      the file is not checked nor counted\n";
     std::cout << "\n" << bold << "SEVERITY" << reset << "  unforgivable > major > minor > negligible (mandatory: R34, displayed and never counted)\n";
     std::cout << bold << "EXIT" << reset << "      0 clean, 1 issues left (>= --fail-on, a mandatory rule never counts), 255 error\n";
 }
@@ -610,6 +612,7 @@ _cold void xstyle::Core::run(void)
         if (error || display.starts_with("../../")) display = path.generic_string();
         try {
             xstyle::SourceFile source(path, display, language);
+            if (checker.skipped(source)) continue; // xstyle: skip-file
             reporter.addFile(source);
             r34Proof = r34Proof || xstyle::check::r34_proof(source);
             if (this->_options.fix) {

@@ -101,6 +101,11 @@ if(XSTYLE_PACKAGE_BIN AND NOT CMAKE_CROSSCOMPILING)
         COMMAND sh -c "d=$(mktemp -d) && printf 'section .text\\n    global first\\n\\nfirst:\\n    mov rax, 1\\n    syscall\\n\\n_second:\\n    ret\\n' > $d/f.asm && $0 --rtk --r34 -c ASM-FALLTHROUGH,ASM-SYSCALL-COMMENT $d/f.asm; rm -rf $d; exit 0" $<TARGET_FILE:xstyle>
     )
     set_tests_properties(Cli.AsmRules PROPERTIES PASS_REGULAR_EXPRESSION "5:5 ASM-SYSCALL-COMMENT.*6:5 ASM-FALLTHROUGH.*= 2 issues")
+    # Suppression comments: off / on region, ignore-next N, skip-file (not counted)
+    add_test(NAME Cli.Directives
+        COMMAND sh -c "d=$(mktemp -d) && printf 'a = 1  \\n# xstyle: off G-TRAILING\\nb = 2  \\n# xstyle: on\\nc = 3  \\n# xstyle: ignore-next 2\\nd = 4  \\ne = 5  \\nf = 6  \\n' > $d/f.py && printf '# xstyle: skip-file\\nx = 1  \\n' > $d/g.py && $0 --rtk --r34 -c G-TRAILING $d; rm -rf $d; exit 0" $<TARGET_FILE:xstyle>
+    )
+    set_tests_properties(Cli.Directives PROPERTIES PASS_REGULAR_EXPRESSION "1:6 G-TRAILING.*5:6 G-TRAILING.*9:6 G-TRAILING.*= 3 issues in 1 files")
     add_test(NAME Cli.Version COMMAND $<TARGET_FILE:xstyle> --version)
     add_test(NAME Cli.ListRulesColumns COMMAND $<TARGET_FILE:xstyle> --list-rules --no-color)
     set_tests_properties(Cli.ListRulesColumns PROPERTIES PASS_REGULAR_EXPRESSION "cmake  +Indentation that is not a multiple of 4")

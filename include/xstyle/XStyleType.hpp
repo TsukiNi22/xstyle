@@ -81,6 +81,15 @@ enum class Format: std::uint8_t {
     Json,
 };
 
+enum class DirectiveKind: std::uint8_t {
+    Ignore, // xstyle: ignore [CODES]: this line
+    IgnoreNext, // xstyle: ignore-next [N] [CODES]: the next N lines (1 by default)
+    IgnoreFile, // xstyle: ignore-file [CODES]: the whole file
+    SkipFile, // xstyle: skip-file: the file is not checked nor counted
+    Off, // xstyle: off [CODES]: up to the next xstyle: on (or the end of the file)
+    On, // xstyle: on [CODES]: closes the off regions (of these codes)
+};
+
 //----------------------------------------------------------------//
 /* STRUCT */
 
@@ -119,6 +128,14 @@ struct Issue {
     std::string link; // documentation of the rule (hyperlink)
     std::optional<xstyle::Fix> fix; // automatic fix (only for fixable rules)
     xstyle::FixMode mode = xstyle::FixMode::Manual; // how this issue can be fixed
+};
+
+struct Directive {
+    xstyle::DirectiveKind kind = xstyle::DirectiveKind::Ignore;
+    std::size_t line = 0; // 1-based line of the comment
+    std::vector<std::string> codes; // codes / prefixes / patterns (empty = every rule)
+    std::size_t first = 0; // first line covered (1-based, 0 = the whole file, its line 0 issues included)
+    std::size_t last = 0; // last line covered (1-based, inclusive)
 };
 
 struct AppliedFix {
@@ -161,6 +178,7 @@ struct Options {
     std::vector<std::string> codes; // only these codes / prefixes (empty = every code)
     std::vector<std::string> ignored; // never these codes / prefixes
     std::vector<std::string> excludes; // path patterns skipped (substring or * glob)
+    bool inlineIgnores = true; // the xstyle: ... comments of the files (--no-inline-ignore: off)
     std::vector<xstyle::Language> languages; // empty = every known language
     bool topOnly = false; // only the most used language
     xstyle::Severity minSeverity = xstyle::Severity::Negligible; // reported from this one
