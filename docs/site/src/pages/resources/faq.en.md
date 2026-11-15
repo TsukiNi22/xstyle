@@ -8,7 +8,7 @@ keywords = "faq questions r34 configuration file windows exit status libutils ru
 
 ## Is there a configuration file? {#config}
 
-No. The defaults come from the [environment variables](page:suppression#environment), the exceptions from [comments in the code](page:suppression#comments).
+Yes: a [`.xconfig`](page:suppression#xconfig) at the root of the project (TOML) gives the default of the flags and the rules ignored by path, the [`.xignore`](page:suppression#xignore) files skip paths or ignore rules there. The [environment variables](page:suppression#environment) and the command line win over it; the exceptions of one line go in [comments in the code](page:suppression#comments).
 
 ## What is R34, and how do I hide it? {#r34}
 

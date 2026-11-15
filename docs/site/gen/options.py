@@ -27,6 +27,7 @@ except ImportError as e:
 # Groups of xstyle --help documented as tables: id, title (en, fr)
 GROUPS = {
     "SELECTION": ("selection", "Selection", "Sélection"),
+    "IGNORE": ("ignore", "Ignore", "Ignorer"),
     "FIX": ("fix", "Fix", "Correction"),
     "OUTPUT": ("output", "Output", "Sortie"),
     "INFORMATION": ("information", "Information", "Information"),

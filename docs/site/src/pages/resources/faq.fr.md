@@ -8,7 +8,7 @@ keywords = "faq questions r34 fichier de configuration windows code de sortie r�
 
 ## Y a-t-il un fichier de configuration ? {#config}
 
-Non. Les valeurs par défaut viennent des [variables d'environnement](page:suppression#environment), les exceptions des [commentaires dans le code](page:suppression#comments).
+Oui : un [`.xconfig`](page:suppression#xconfig) à la racine du projet (TOML) donne la valeur par défaut des flags et les règles ignorées par chemin, les fichiers [`.xignore`](page:suppression#xignore) sautent des chemins ou y ignorent des règles. Les [variables d'environnement](page:suppression#environment) et la ligne de commande l'emportent ; les exceptions d'une ligne vont dans des [commentaires du code](page:suppression#comments).
 
 ## Qu'est-ce que R34, et comment la masquer ? {#r34}
 
