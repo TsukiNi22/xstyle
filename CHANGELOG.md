@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [pre-release]
 ### Changed
+- Documentation site: the suppression page becomes "Ignoring rules and files" (comments, `.xignore`, `.xconfig`, flags, `--add-ignore`), the options page has an Ignore group, the FAQ points to `.xconfig`
 - **[MAJOR]** The files ignored by git are skipped (`git ls-files --others --ignored --exclude-standard`), unless given as argument; `--no-gitignore` (or `gitignore = false` in `.xconfig`) checks them
 - `-i` of the command line and `ignore` of `.xconfig` add up
 - README rules table, documentation site (rules page: C++, C and assembly families; languages page: C headers, ignored results, assembly) regenerated with the C and assembly rules
