@@ -34,6 +34,7 @@ _cold const std::vector<xstyle::Rule>& xstyle::rules(void)
         {"G-EOF-NEWLINE",      xstyle::Severity::Negligible,   xstyle::FixMode::Auto,   "*",            "No newline at the end of the file"},
         {"G-EOF-EMPTY",        xstyle::Severity::Negligible,   xstyle::FixMode::Auto,   "*",            "Empty lines at the end of the file"},
         {"G-TODO",             xstyle::Severity::Minor,        xstyle::FixMode::Manual, "*",            "TODO / FIXME / XXX tag, describe the limitation in a normal comment instead"},
+        {"G-UNUSED-IGNORE",    xstyle::Severity::Minor,        xstyle::FixMode::Auto,   "*",            "Suppression comment (xstyle: ignore / ignore-next / ignore-file / off) that silences nothing, remove it"},
         {"G-INDENT",           xstyle::Severity::Negligible,   xstyle::FixMode::Manual, "cpp,c,py,sh,lua,js,rs,cmake", "Indentation that is not a multiple of 4 spaces"},
 
         // C++

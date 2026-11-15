@@ -240,6 +240,9 @@ a prefix or a pattern (`CPP`, `LU-*`), a reason after the codes starts with a lo
 | `xstyle: ignore-file [CODE,...]` | the whole file |
 | `xstyle: skip-file` | the file is not checked nor counted |
 
+A comment that silences nothing any more is reported by `G-UNUSED-IGNORE` (removed by `--fix`; an `off` region loses its
+`on` too). The rules that are off (libutils), `R34` and the comments silencing `G-UNUSED-IGNORE` itself are never reported.
+
 ```cpp
 std::cout << "\033[1m"; // xstyle: ignore LU-ANSI
 // xstyle: ignore-next 2 CPP-AUTO
@@ -297,6 +300,7 @@ Languages: `*` = every file checked.
 | `G-EOF-NEWLINE` | negligible | auto | * | No newline at the end of the file |
 | `G-EOF-EMPTY` | negligible | auto | * | Empty lines at the end of the file |
 | `G-TODO` | minor | - | * | TODO / FIXME / XXX tag, describe the limitation in a normal comment instead |
+| `G-UNUSED-IGNORE` | minor | auto | * | Suppression comment (xstyle: ignore / ignore-next / ignore-file / off) that silences nothing, remove it |
 | `G-INDENT` | negligible | - | cpp,c,py,sh,lua,js,rs,cmake | Indentation that is not a multiple of 4 spaces |
 | `CPP-USING-NAMESPACE` | unforgivable | - | cpp | using namespace, always write the fully qualified names |
 | `CPP-GUARD-MISSING` | major | auto | cpp | Header without include guard (#ifndef NAME_H / #define NAME_H) |

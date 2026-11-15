@@ -18,6 +18,7 @@ File Description:
 #include "xstyle/Tools.hpp"
 #include <unordered_map>
 #include <algorithm>
+#include <optional>
 #include <cctype>
 #include <regex>
 
@@ -66,7 +67,8 @@ _hot std::vector<xstyle::Directive> xstyle::Checker::directives(const xstyle::So
         if (at == std::string::npos) continue;
         if (language == xstyle::Language::Markdown && text[i].rfind("<!--", at) == std::string::npos) continue;
         std::smatch match;
-        const std::string tail = text[i].substr(at);
+        std::string tail = text[i].substr(at);
+        tail = tail.substr(0, std::min(tail.find("*/"), tail.find("-->"))); // the end of a block comment is not a * pattern
         if (!std::regex_search(tail, match, directive) || match.position(0) != 0) continue;
         xstyle::Directive found{kinds.at(match[1].str()), i + 1, {}, i + 1, i + 1};
         std::size_t count = 1;
@@ -90,6 +92,72 @@ _hot std::vector<xstyle::Directive> xstyle::Checker::directives(const xstyle::So
         directives.push_back(found);
     }
     return directives;
+}
+
+_hot static std::optional<xstyle::Fix> remove_directive_(const xstyle::SourceFile& file, const std::size_t line)
+{
+    // Only a comment that is the directive alone, up to the end of the line: the whole line, or the comment after the code
+    static const std::regex alone(R"(^(//+|#+|;+|--|/\*+|<!--)\s*xstyle:.*?(\*/|-->)?\s*$)");
+    const std::string& text = file.getLines()[line];
+    const std::string& comment = file.getLanguage() == xstyle::Language::Markdown || file.getLanguage() == xstyle::Language::Json ? text : file.getComments()[line];
+    const std::size_t start = comment.find_first_not_of(" \t");
+    if (start == std::string::npos) return std::nullopt;
+    std::smatch match;
+    const std::string rest = text.substr(start);
+    if (!std::regex_match(rest, match, alone)) return std::nullopt;
+    const bool block = match[1].str().starts_with("/*") || match[1].str() == "<!--";
+    if (block != match[2].matched) return std::nullopt;
+    const std::string code = text.substr(0, start);
+    if (xstyle::is_blank(code)) return xstyle::Fix{xstyle::FixKind::Replace, line, 1, {}};
+    return xstyle::Fix{xstyle::FixKind::Replace, line, 1, {code.substr(0, code.find_last_not_of(" \t") + 1)}};
+}
+
+_hot void xstyle::Checker::unused_(const xstyle::SourceFile& file, const std::vector<xstyle::Directive>& directives, xstyle::check::Issues& issues) const
+{
+    // A suppression comment that matches none of the issues found (before the selection: -c / -s / --diff never make it unused)
+    const xstyle::Language language = file.getLanguage();
+    const xstyle::check::Issues found = issues;
+    for (const xstyle::Directive& directive: directives) {
+        if (directive.kind == xstyle::DirectiveKind::On || directive.kind == xstyle::DirectiveKind::SkipFile) continue;
+        // Never: the comments that silence this rule itself, R34 (not per file), the LU- rules when they are off
+        const bool exempt = std::any_of(directive.codes.begin(), directive.codes.end(), [&](const std::string& p) {
+            return p.starts_with("G-UNUSED") || p == "R34" || (!this->_libutils && p.starts_with("LU"));
+        });
+        if (exempt) continue;
+        const bool used = std::any_of(found.begin(), found.end(), [&](const xstyle::Issue& issue) {
+            const xstyle::Rule* rule = xstyle::find_rule(issue.code);
+            if (!rule || !xstyle::rule_applies(*rule, language)) return false;
+            if (directive.first != 0 && (issue.line < directive.first || issue.line > directive.last)) return false;
+            return directive.codes.empty() || std::any_of(directive.codes.begin(), directive.codes.end(), [&](const std::string& p) {return xstyle::match_code(issue.code, p);});
+        });
+        if (used) continue;
+        const std::string what = directive.codes.empty() ? "every rule" : [&]() {
+            std::string list;
+            for (const std::string& code: directive.codes)
+                list += (list.empty() ? "" : ",") + code;
+            return list;
+        }();
+        // The fix removes the comment (an off region: its closing on too, the lines between kept)
+        const std::size_t line = directive.line - 1;
+        std::optional<xstyle::Fix> fix = remove_directive_(file, line);
+        const bool closed = directive.kind == xstyle::DirectiveKind::Off && directive.last != line + 1 && directive.last <= file.getLines().size()
+            && std::any_of(directives.begin(), directives.end(), [&](const xstyle::Directive& d) {return d.kind == xstyle::DirectiveKind::On && d.line == directive.last;});
+        if (fix && closed) {
+            const std::optional<xstyle::Fix> end = remove_directive_(file, directive.last - 1);
+            if (end) {
+                std::vector<std::string> lines = fix->lines;
+                lines.insert(lines.end(), file.getLines().begin() + static_cast<std::ptrdiff_t>(line + 1), file.getLines().begin() + static_cast<std::ptrdiff_t>(directive.last - 1));
+                lines.insert(lines.end(), end->lines.begin(), end->lines.end());
+                fix = xstyle::Fix{xstyle::FixKind::Replace, line, directive.last - line, lines};
+            } else {
+                fix = std::nullopt;
+            }
+        }
+        const std::string& comments = file.getLanguage() == xstyle::Language::Markdown || file.getLanguage() == xstyle::Language::Json ? file.getLines()[line] : file.getComments()[line];
+        const std::size_t column = comments.find_first_not_of(" \t");
+        issues.push_back(xstyle::check::make_issue(file, line, column == std::string::npos ? 0 : column, "G-UNUSED-IGNORE", "Suppression comment of " + what + " that silences nothing",
+            "remove it (the issue it silenced is gone)", fix));
+    }
 }
 
 _hot bool xstyle::Checker::skipped(const xstyle::SourceFile& file) const
@@ -122,8 +190,9 @@ _hot std::vector<xstyle::Issue> xstyle::Checker::run_(const xstyle::SourceFile& 
         if (language == xstyle::Language::CMake) xstyle::check::cmake(file, issues);
     }
 
-    // Selection: language of the rule, codes, severity, suppression comments
+    // Selection: language of the rule, codes, severity, suppression comments (and the ones that silence nothing)
     const std::vector<xstyle::Directive> directives = this->_options.inlineIgnores ? xstyle::Checker::directives(file) : std::vector<xstyle::Directive>();
+    if (!templateFile) this->unused_(file, directives, issues);
     std::erase_if(issues, [&](const xstyle::Issue& issue) {
         const xstyle::Rule* rule = xstyle::find_rule(issue.code);
         return !rule || !xstyle::rule_applies(*rule, language) || !this->selected_(issue.code, fix) || issue.severity < this->_options.minSeverity

@@ -106,6 +106,11 @@ if(XSTYLE_PACKAGE_BIN AND NOT CMAKE_CROSSCOMPILING)
         COMMAND sh -c "d=$(mktemp -d) && printf 'a = 1  \\n# xstyle: off G-TRAILING\\nb = 2  \\n# xstyle: on\\nc = 3  \\n# xstyle: ignore-next 2\\nd = 4  \\ne = 5  \\nf = 6  \\n' > $d/f.py && printf '# xstyle: skip-file\\nx = 1  \\n' > $d/g.py && $0 --rtk --r34 -c G-TRAILING $d; rm -rf $d; exit 0" $<TARGET_FILE:xstyle>
     )
     set_tests_properties(Cli.Directives PROPERTIES PASS_REGULAR_EXPRESSION "1:6 G-TRAILING.*5:6 G-TRAILING.*9:6 G-TRAILING.*= 3 issues in 1 files")
+    # A suppression comment that silences nothing (G-UNUSED-IGNORE), removed by --fix with the on of its off region
+    add_test(NAME Cli.UnusedIgnore
+        COMMAND sh -c "d=$(mktemp -d) && printf 'a = 1 # xstyle: ignore G-TRAILING\\n# xstyle: off G-TAB\\nb = 2\\n# xstyle: on\\n  c = 3 # xstyle: ignore G-INDENT\\n' > $d/f.py && $0 --rtk --r34 -c G-UNUSED-IGNORE $d/f.py; $0 --rtk --r34 --fix G-UNUSED-IGNORE $d/f.py >/dev/null; cat $d/f.py; rm -rf $d; exit 0" $<TARGET_FILE:xstyle>
+    )
+    set_tests_properties(Cli.UnusedIgnore PROPERTIES PASS_REGULAR_EXPRESSION "1:7 G-UNUSED-IGNORE.*2:1 G-UNUSED-IGNORE.*= 2 issues.*a = 1\nb = 2\n  c = 3 # xstyle")
     add_test(NAME Cli.Version COMMAND $<TARGET_FILE:xstyle> --version)
     add_test(NAME Cli.ListRulesColumns COMMAND $<TARGET_FILE:xstyle> --list-rules --no-color)
     set_tests_properties(Cli.ListRulesColumns PROPERTIES PASS_REGULAR_EXPRESSION "cmake  +Indentation that is not a multiple of 4")

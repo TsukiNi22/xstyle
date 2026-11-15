@@ -41,6 +41,7 @@ class Checker {
         // ---------- Pre-Function -------- //
         _hot _nodiscard bool selected_(std::string_view code, const bool fix) const;
         _hot _nodiscard bool suppressed_(const std::vector<xstyle::Directive>& directives, const xstyle::Issue& issue) const;
+        _hot void unused_(const xstyle::SourceFile& file, const std::vector<xstyle::Directive>& directives, std::vector<xstyle::Issue>& issues) const; // G-UNUSED-IGNORE
         _hot _nodiscard bool changed_(const xstyle::SourceFile& file, const std::size_t line) const;
         _hot _nodiscard std::vector<xstyle::Issue> run_(const xstyle::SourceFile& file, const bool fix) const;
 
