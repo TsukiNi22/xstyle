@@ -20,6 +20,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [pre-release] (empty)
 
+## v1.2.1 - 2026-11-27
+### Fixed
+- A member function with an attribute after its qualifiers (`const _lifetimebound {...}`, `const [[clang::lifetimebound]] {...}`) was taken for a declaration without body: `CPP-CLASS-BLOCK` reported it and the checks of the function bodies skipped it
+
 ## v1.2.0 - 2026-11-15
 ### Changed
 - Documentation site: the suppression page becomes "Ignoring rules and files" (comments, `.xignore`, `.xconfig`, flags, `--add-ignore`), the options page has an Ignore group, the FAQ points to `.xconfig`
