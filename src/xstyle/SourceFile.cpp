@@ -372,7 +372,8 @@ _hot void xstyle::SourceFile::scopes_(void)
 {
     static const std::regex control(R"(^(?:else\s+)?(?:if|for|while|switch|catch)\b|^(?:else|do|try)$)");
     static const std::regex lambda(R"(\[[^\[\]]*\]\s*(?:\([^{}]*\))?\s*(?:mutable|constexpr|noexcept|->[^{}]*|\s)*$)");
-    static const std::regex function(R"(\)\s*(?:const|noexcept(?:\([^()]*\))?|override|final|mutable|volatile|&&|&|try|->[^{};]*|requires[^{};]*|\s)*$)");
+    // after the parameters: the qualifiers, a trailing return / requires, and the attributes written after them ([[...]], _lifetimebound of libutils)
+    static const std::regex function(R"(\)\s*(?:const|noexcept(?:\([^()]*\))?|override|final|mutable|volatile|&&|&|try|->[^{};]*|requires[^{};]*|\[\[[^\]]*\]\]|_lifetimebound|\s)*$)");
     static const std::regex classHead(R"(\b(class|struct|union)\s+(?:\[\[[^\]]*\]\]\s*|_\w+(?:\([^)]*\))?\s+)*(\w+))");
     static const std::regex namespaceHead(R"(\bnamespace\b\s*([\w:]*))");
     static const std::regex staticWord(R"(\bstatic\b)");
