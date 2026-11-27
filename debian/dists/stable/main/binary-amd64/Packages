@@ -52,6 +52,24 @@ Priority: optional
 Homepage: https://github.com/TsukiNi22/xstyle
 Description: Coding style checker / fixer (global)
 
+Package: xstyle
+Version: 1.2.1-1
+Maintainer: TsukiNi22
+Installed-Size: 4
+Depends: xstyle-op (>= 1.2.1)
+Conflicts: xstyle-pre
+Breaks: xstyle-pre
+Replaces: xstyle-pre (<= 1.2.1)
+Filename: pool/main/xstyle-1.2.1-Linux.deb
+Size: 618
+MD5sum: af1666e01c7622121c74b0cfb012acde
+SHA1: cceedb4371d77bfffa5117b04da376e08d740c06
+SHA256: e5d89c454e5298d70264ffaff0ac55ac9423257651c0ea69746dc31cb0aed4d7
+Section: devel
+Priority: optional
+Homepage: https://github.com/TsukiNi22/xstyle
+Description: Coding style checker / fixer (global)
+
 Package: xstyle-as
 Version: 1.0.0-1
 Maintainer: TsukiNi22
@@ -98,6 +116,23 @@ Size: 9326406
 MD5sum: be276780cd4f4f677ef11c7bf86b7437
 SHA1: 51d62a2d28c5daa4a4bd9dfaea400504e8470f94
 SHA256: e5128c6b56f8143c1c418f93700384f0ed6d97b23f6861ded03841e0caaf512d
+Section: devel
+Priority: optional
+Homepage: https://github.com/TsukiNi22/xstyle
+Description: Coding style checker / fixer (asan)
+
+Package: xstyle-as
+Version: 1.2.1-1
+Maintainer: TsukiNi22
+Installed-Size: 29114
+Conflicts: xstyle-db, xstyle-db-pre, xstyle-as-pre, xstyle-op, xstyle-op-pre
+Breaks: xstyle-db, xstyle-db-pre, xstyle-as-pre, xstyle-op, xstyle-op-pre
+Replaces: xstyle-as-pre (<= 1.2.1)
+Filename: pool/main/xstyle-as-1.2.1-Linux-bin.deb
+Size: 9326430
+MD5sum: fa8e6d5202e6c0afce0d9d07e81a3f3d
+SHA1: b56c5d02c4ba117737a8f4b6fa9192ad7346232b
+SHA256: ee2f68a24c33f5f53a9e80575f2263e238bbe96206a4677c33bba7f380b7553d
 Section: devel
 Priority: optional
 Homepage: https://github.com/TsukiNi22/xstyle
@@ -189,6 +224,24 @@ Priority: optional
 Homepage: https://github.com/TsukiNi22/xstyle
 Description: Coding style checker / fixer (debug)
 
+Package: xstyle-db
+Version: 1.2.1-1
+Maintainer: TsukiNi22
+Installed-Size: 21844
+Suggests: gdb
+Conflicts: xstyle-db-pre, xstyle-as, xstyle-as-pre, xstyle-op, xstyle-op-pre
+Breaks: xstyle-db-pre, xstyle-as, xstyle-as-pre, xstyle-op, xstyle-op-pre
+Replaces: xstyle-db-pre (<= 1.2.1)
+Filename: pool/main/xstyle-db-1.2.1-Linux-bin.deb
+Size: 7203970
+MD5sum: fa516e4ad01b30b01a8dbd9551501e2b
+SHA1: 27ec1b9d0887b8a20190e0e122a2ac73019b65c9
+SHA256: bc5315c523969f19305e7996f75d23d892e8e0cba750f8f115157bf8a5dd96f8
+Section: devel
+Priority: optional
+Homepage: https://github.com/TsukiNi22/xstyle
+Description: Coding style checker / fixer (debug)
+
 Package: xstyle-db-pre
 Version: 1.1.0-2
 Maintainer: TsukiNi22
@@ -269,6 +322,23 @@ Size: 785474
 MD5sum: 978463f9b5a9adac2e49ac1528ea7d52
 SHA1: d6f71db2ca33480e274cd8aa12188d6401df0de8
 SHA256: 9042727c440f4f6847dca542565a60925cf5b0f241935e84635eabd9a6e97b8e
+Section: devel
+Priority: optional
+Homepage: https://github.com/TsukiNi22/xstyle
+Description: Coding style checker / fixer (optimized)
+
+Package: xstyle-op
+Version: 1.2.1-1
+Maintainer: TsukiNi22
+Installed-Size: 2092
+Conflicts: xstyle-db, xstyle-db-pre, xstyle-as, xstyle-as-pre, xstyle-op-pre
+Breaks: xstyle-db, xstyle-db-pre, xstyle-as, xstyle-as-pre, xstyle-op-pre
+Replaces: xstyle-op-pre (<= 1.2.1)
+Filename: pool/main/xstyle-op-1.2.1-Linux-bin.deb
+Size: 785466
+MD5sum: a95808bd5a504699b3639cc49a3d52fc
+SHA1: 3f31f1382e3105d9f2ad5cdaae2c5725e71d54dd
+SHA256: 2227a3315e8ef0f28e1b95bd388cfbe7adf2399a152590868b5eb0339fbb6807
 Section: devel
 Priority: optional
 Homepage: https://github.com/TsukiNi22/xstyle
